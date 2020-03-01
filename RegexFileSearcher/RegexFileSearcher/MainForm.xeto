@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form
+	xmlns="http://schema.picoe.ca/eto.forms" 
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	Title="Regex File Searcher v1.0.0"
+	ClientSize="500, 700"
+	MinimumSize="500, 700"
+	Padding="10"
+	>
+
+  <TableLayout>
+    <TableRow>
+      <TableCell>
+        <Label>Filename Regex:</Label>
+      </TableCell>
+     </TableRow>
+    <TableRow>
+      <TableCell ScaleWidth="True">
+        <TextBox ID="txtFilenameRegex"></TextBox>
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
+        <TableLayout>
+          <TableRow>
+            <TableCell>
+              <StackLayout Padding="5,1,1,1" Orientation="Vertical">
+                <CheckBox ID="chkIgnoreCase" ToolTip="Don't distinguish between upper and lower case">Ignore Case</CheckBox>
+                <CheckBox ID="chkSingleLine" ToolTip="Make period match \n too" Checked="True" Enabled="False">Single Line</CheckBox>
+                <CheckBox ID="chkCultureInvariant" ToolTip="Make match insensitive to the culture">Culture Invariant</CheckBox>
+                <CheckBox ID="chkExplicitCapture" ToolTip="Capture groups only if explicitly numbered or named" Checked="True" Enabled="False">Explicit Capture</CheckBox>
+                <CheckBox ID="chkEcmaScript" ToolTip="ECMA Script compliant, can only use with ignore case and multiline">ECMA Script</CheckBox>
+              </StackLayout>
+            </TableCell>
+            <TableCell>
+              <StackLayout Padding="5,1,1,1" Orientation="Vertical">
+                <CheckBox ID="chkIgnoreWhite" ToolTip="Ignore unescaped whitespace, allow comments after #">Ignore White</CheckBox>
+                <CheckBox ID="chkMultiline" ToolTip="^ and $ will match the entire string instead of lines" Checked="True" Enabled="False">Multiline</CheckBox>
+                <CheckBox ID="chkRightToLeft" ToolTip="Search from right to left">Right to Left</CheckBox>
+                <CheckBox ID="chkCompiled" ToolTip="Compile to assembly, slower startup, faster search" Checked="True" Enabled="False">Compiled</CheckBox>
+              </StackLayout>
+            </TableCell>
+            <TableCell>
+              <StackLayout ToolTip="Stop search after specified milliseconds" Padding="20,1,1,1" Orientation="Horizontal">
+                <Label>Timeout</Label>
+                <Panel Padding="5,0,5,0">
+                  <NumericStepper ID="nudTimeout"
+                                  MinValue="1"
+                                  MaxValue="100000"
+                                  MaximumDecimalPlaces="0"
+                                  Value="2000"
+                                  Increment="1000"
+                                  Width="120"/>
+                </Panel>
+                <Label>ms</Label>
+              </StackLayout>
+            </TableCell>
+          </TableRow>
+        </TableLayout>
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
+        <Label>Content Regex:</Label>
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell ScaleWidth="True">
+        <TextBox ID="txtContentRegex"></TextBox>
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
+        <TableLayout>
+          <TableRow>
+            <TableCell>
+              <StackLayout Padding="5,1,1,1" Orientation="Vertical">
+                <CheckBox ID="chkContentIgnoreCase" ToolTip="Don't distinguish between upper and lower case">Ignore Case</CheckBox>
+                <CheckBox ID="chkContentSingleLine" ToolTip="Make period match \n too">Single Line</CheckBox>
+                <CheckBox ID="chkContentCultureInvariant" ToolTip="Make match insensitive to the culture">Culture Invariant</CheckBox>
+                <CheckBox ID="chkContentExplicitCapture" ToolTip="Capture groups only if explicitly numbered or named" Checked="True" Enabled="False">Explicit Capture</CheckBox>
+                <CheckBox ID="chkContentEcmaScript" ToolTip="ECMA Script compliant, can only use with ignore case and multiline">ECMA Script</CheckBox>
+              </StackLayout>
+            </TableCell>
+            <TableCell>
+              <StackLayout Padding="5,1,1,1" Orientation="Vertical">
+                <CheckBox ID="chkContentIgnoreWhite" ToolTip="Ignore unescaped whitespace, allow comments after #">Ignore White</CheckBox>
+                <CheckBox ID="chkContentMultiline" ToolTip="^ and $ will match the entire string instead of lines" Checked="True">Multiline</CheckBox>
+                <CheckBox ID="chkContentRightToLeft" ToolTip="Search from right to left">Right to Left</CheckBox>
+                <CheckBox ID="chkContentCompiled" ToolTip="Compile to assembly, slower startup, faster search" Checked="True" Enabled="False">Compiled</CheckBox>
+              </StackLayout>
+            </TableCell>
+            <TableCell>
+              <StackLayout ToolTip="Stop search after specified milliseconds" Padding="20,1,1,1" Orientation="Horizontal">
+                <Label>Timeout</Label>
+                <Panel Padding="5,0,5,0">
+                  <NumericStepper ID="nudContentTimeout"
+                                  MinValue="1"
+                                  MaxValue="100000"
+                                  MaximumDecimalPlaces="0"
+                                  Value="2000"
+                                  Increment="1000"
+                                  Width="120"/>
+                </Panel>
+                <Label>ms</Label>
+              </StackLayout>
+            </TableCell>
+          </TableRow>
+        </TableLayout>
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
+        <Label>Path:</Label>
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
+        <FilePicker ID="fpSearchPath" FileAction="SelectFolder"></FilePicker>
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
+        <Button ID="btnStartSearch" Click="HandleStartSearch">Start Search</Button>
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
+        <Label>Open With Editor:</Label>
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell ScaleWidth="True">
+          <FilePicker ID="fpOpenWith" FileAction="OpenFile" />
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
+        <StackLayout Orientation="Vertical">
+          <StackLayout Orientation="Horizontal">
+            <Button ID="btnSelectAll" Click="HandleSelectAll">Select All</Button>
+            <Button ID="btnSelectNone" Click="HandleSelectNone">Select None</Button>
+            <Button ID="btnInvertSelection" Click="HandleInvertSelection">Invert Selection</Button>
+            <Button ID="btnOpenSelected" Click="HandleOpenSelected">Open Selected</Button>
+            <Button ID="btnOrderByMatches" Click="HandleOrderByMatches">Order by Matches</Button>
+          </StackLayout>
+        </StackLayout>
+      </TableCell>
+    </TableRow>
+    <TableRow ScaleHeight="True">
+      <TableCell>
+        <TreeGridView ID="tvwResultExplorer" SelectedItemChanged="HandleResultExplorerSelectedItemChanged" />
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
+        <TextBox ID="txtPath" ReadOnly="True" />
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
+        <Label ID="lblStatus" />
+      </TableCell>
+    </TableRow>
+  </TableLayout>
+</Form>
