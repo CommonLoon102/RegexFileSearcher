@@ -155,7 +155,6 @@ namespace RegexFileSearcher
 
                         var button = new LinkButton
                         {
-                            Style = "primary-link-btn",
                             Text = $"Open",
                             Command = new Command(Click)
                         };
