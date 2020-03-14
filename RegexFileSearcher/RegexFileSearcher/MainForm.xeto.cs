@@ -38,6 +38,7 @@ namespace RegexFileSearcher
         private readonly CheckBox chkContentSingleLine;
         private readonly NumericStepper nudContentTimeout;
         private readonly FilePicker fpSearchPath;
+        private readonly ComboBox cboSubdirectories;
         private readonly Button btnStartSearch;
         private readonly FilePicker fpOpenWith;
         private readonly Button btnSelectAll;
@@ -91,6 +92,9 @@ namespace RegexFileSearcher
         private static readonly object _locker = new object();
         private bool _matchNumberOrdering;
         private DateTime _lastTreeGridViewRefresh = DateTime.UtcNow;
+        private int _searchDepth = -1;
+        private string _contentPattern;
+        private string _filenamePattern;
 
         public MainForm()
         {
@@ -119,6 +123,7 @@ namespace RegexFileSearcher
             chkContentSingleLine = FindChild<CheckBox>("chkContentSingleLine");
             nudContentTimeout = FindChild<NumericStepper>("nudContentTimeout");
             fpSearchPath = FindChild<FilePicker>("fpSearchPath");
+            cboSubdirectories = FindChild<ComboBox>("cboSubdirectories");
             btnStartSearch = FindChild<Button>("btnStartSearch");
             fpOpenWith = FindChild<FilePicker>("fpOpenWith");
             btnSelectAll = FindChild<Button>("btnSelectAll");
@@ -131,6 +136,29 @@ namespace RegexFileSearcher
             lblStatus = FindChild<Label>("lblStatus");
             #endregion // Initialize Controls
 
+            AddSubdirectoriesItems();
+            AddTestResultExplorerColumns();
+        }
+
+        private void AddSubdirectoriesItems()
+        {
+            cboSubdirectories.SuspendLayout();
+            cboSubdirectories.Items.Add("all (unlimited depth)", "-1");
+            cboSubdirectories.Items.Add("current dir only", "0");
+            cboSubdirectories.Items.Add("1 level", "1");
+            for (int i = 2; i <= 32; i++)
+            {
+                cboSubdirectories.Items.Add($"{i} levels", i.ToString());
+            }
+
+            cboSubdirectories.SelectedKey = "-1";
+            cboSubdirectories.ReadOnly = true;
+            cboSubdirectories.ResumeLayout();
+            cboSubdirectories.Invalidate();
+        }
+
+        private void AddTestResultExplorerColumns()
+        {
             tvwResultExplorer.Columns.Add(new GridColumn()
             {
                 HeaderText = "Select",
@@ -197,12 +225,15 @@ namespace RegexFileSearcher
 
         private async void HandleStartSearch(object sender, EventArgs e)
         {
+            string searchPath = fpSearchPath.FilePath?.Trim();
+            if (string.IsNullOrWhiteSpace(searchPath))
+                return;
+
+            if (!Directory.Exists(searchPath))
+                return;
+
             try
             {
-                string searchPath = fpSearchPath.FilePath.Trim();
-                if (!Directory.Exists(searchPath))
-                    return;
-
                 lock (_locker)
                 {
                     if (_isSearching)
@@ -219,6 +250,10 @@ namespace RegexFileSearcher
                     _isSearching = true;
                 }
 
+                _filenamePattern = txtFilenameRegex.Text;
+                _contentPattern = txtContentRegex.Text;
+                _searchDepth = int.Parse(cboSubdirectories.SelectedKey);
+
                 _filenameRegex = FilenameRegex;
                 _contentRegex = ContentRegex;
 
@@ -230,7 +265,7 @@ namespace RegexFileSearcher
                 btnOrderByMatches.Enabled = false;
                 _cancellationTokenSource = new CancellationTokenSource();
                 CancellationToken token = _cancellationTokenSource.Token;
-                await Task.Factory.StartNew(() => SearchDirectory(searchPath, treeGridItemCollection),
+                await Task.Factory.StartNew(() => SearchDirectory(0, searchPath, treeGridItemCollection),
                     token,
                     TaskCreationOptions.LongRunning,
                     TaskScheduler.Default);
@@ -249,9 +284,12 @@ namespace RegexFileSearcher
             }
         }
 
-        private void SearchDirectory(string path, TreeGridItemCollection treeGridItemCollection)
+        private void SearchDirectory(int level, string path, TreeGridItemCollection treeGridItemCollection)
         {
             if (_cancellationTokenSource.IsCancellationRequested)
+                return;
+
+            if (_searchDepth != -1 && level > _searchDepth)
                 return;
 
             Application.Instance.Invoke(() => lblStatus.Text = path);
@@ -260,8 +298,19 @@ namespace RegexFileSearcher
             {
                 try
                 {
-                    MatchCollection matches = _contentRegex.Matches(File.ReadAllText(filePath));
-                    if (matches.Count > 0)
+                    int count = 0;
+                    bool add = false;
+                    if (string.IsNullOrWhiteSpace(_contentPattern))
+                    {
+                        add = true;
+                    }
+                    else
+                    {
+                        MatchCollection matches = _contentRegex.Matches(File.ReadAllText(filePath));
+                        count = matches.Count;
+                        add = count > 0;
+                    }
+                    if (add)
                     {
                         treeGridItemCollection.Add(
                             new TreeGridItem()
@@ -270,7 +319,7 @@ namespace RegexFileSearcher
                                 {
                                     false, // column 0: Selected checkbox
                                     null, // column 1: Open link
-                                    matches.Count,
+                                    count,
                                     filePath
                                 }
                             });
@@ -284,29 +333,43 @@ namespace RegexFileSearcher
 
             UpdateResultExplorer();
 
-            foreach (string directoryPath in Directory.GetDirectories(path))
+            try
             {
-                SearchDirectory(directoryPath, treeGridItemCollection);
+                foreach (string directoryPath in Directory.GetDirectories(path))
+                {
+                    SearchDirectory(level + 1, directoryPath, treeGridItemCollection);
+                }
+            }
+            catch
+            {
+                // No permission to list directories, etc.
             }
         }
 
         private List<string> GetMatchingFiles(string path)
         {
             List<string> filePaths = new List<string>();
-            foreach (string filePath in Directory.GetFiles(path))
+            try
             {
-                string filename = Path.GetFileName(filePath);
-                try
+                foreach (string filePath in Directory.GetFiles(path))
                 {
-                    if (_filenameRegex.IsMatch(filename))
+                    string filename = Path.GetFileName(filePath);
+                    try
                     {
-                        filePaths.Add(filePath);
+                        if (string.IsNullOrWhiteSpace(_filenamePattern) || _filenameRegex.IsMatch(filename))
+                        {
+                            filePaths.Add(filePath);
+                        }
+                    }
+                    catch
+                    {
+                        // Regex timeout
                     }
                 }
-                catch
-                {
-                    // Regex timeout
-                }
+            }
+            catch
+            {
+                // No permission to list files, etc.
             }
 
             return filePaths;
