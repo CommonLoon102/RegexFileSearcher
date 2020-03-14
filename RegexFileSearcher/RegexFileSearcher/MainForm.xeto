@@ -2,7 +2,7 @@
 <Form
 	xmlns="http://schema.picoe.ca/eto.forms" 
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-	Title="Regex File Searcher v1.0.0"
+	Title="Regex File Searcher v1.0.1"
 	ClientSize="600, 700"
 	MinimumSize="600, 700"
 	Padding="10"
@@ -111,12 +111,22 @@
     </TableRow>
     <TableRow>
       <TableCell>
-        <Label>Path:</Label>
+        <Label>Search Directory:</Label>
       </TableCell>
     </TableRow>
     <TableRow>
       <TableCell>
         <FilePicker ID="fpSearchPath" FileAction="SelectFolder"></FilePicker>
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
+        <StackLayout Padding="0,5,0,5" Orientation="Horizontal">
+          <Label>Search in Subdirectories:</Label>
+          <Panel Padding="5,0,5,0">
+            <ComboBox ID="cboSubdirectories" Width="200" />
+          </Panel>
+        </StackLayout>
       </TableCell>
     </TableRow>
     <TableRow>

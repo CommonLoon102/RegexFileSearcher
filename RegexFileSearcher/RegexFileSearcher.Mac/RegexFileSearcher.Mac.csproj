@@ -5,6 +5,14 @@
     <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
     
     <RuntimeIdentifiers>osx-x64</RuntimeIdentifiers>
+    
+    <RepositoryUrl>https://github.com/CommonLoon102/RegexFileSearcher</RepositoryUrl>
+    
+    <PackageProjectUrl>https://github.com/CommonLoon102/RegexFileSearcher</PackageProjectUrl>
+    
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    
+    <Version>1.0.1</Version>
   </PropertyGroup>
 	
   <ItemGroup>
