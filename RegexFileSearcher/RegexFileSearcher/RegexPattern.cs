@@ -6,7 +6,6 @@ namespace RegexFileSearcher
     internal class RegexPattern
     {
         public string Pattern;
-        public string ReplacementText;
         public bool IsCompiled;
         public bool IsIgnoreCase;
         public bool IsMultiline;

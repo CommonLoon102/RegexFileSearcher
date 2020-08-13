@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using Eto.Forms;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 
@@ -12,10 +10,12 @@ namespace RegexFileSearcher
 {
     public partial class MainForm : Form
     {
-        private Regex _filenameRegex;
-
+        private RegexSearcher NewSearcher() => new RegexSearcher(fpSearchPath.FilePath, SearchDepth, FilenameRegex, ContentRegex, ItemCollection, _cancellationTokenSource.Token);
+        private int SearchDepth => int.Parse(cboSubdirectories.SelectedKey);
+        private readonly TreeGridItemCollection ItemCollection = new TreeGridItemCollection();
         private Regex FilenameRegex =>
-            new RegexPattern()
+            string.IsNullOrEmpty(txtFilenameRegex.Text)
+            ? null : new RegexPattern
             {
                 Pattern = txtFilenameRegex.Text,
                 IsCompiled = chkCompiled.Checked ?? false,
@@ -29,11 +29,9 @@ namespace RegexFileSearcher
                 IsSingleLine = chkSingleLine.Checked ?? false,
                 Timeout = (int)nudTimeout.Value
             }.Regex;
-
-        private Regex _contentRegex;
-
         private Regex ContentRegex =>
-            new RegexPattern()
+            string.IsNullOrEmpty(txtContentRegex.Text)
+            ? null : new RegexPattern
             {
                 Pattern = txtContentRegex.Text,
                 IsCompiled = chkContentCompiled.Checked ?? false,
@@ -47,20 +45,15 @@ namespace RegexFileSearcher
                 IsSingleLine = chkContentSingleLine.Checked ?? false,
                 Timeout = (int)nudContentTimeout.Value
             }.Regex;
-
-        private volatile bool _isSearching;
         private CancellationTokenSource _cancellationTokenSource;
+        private Timer _updateTimer;
         private bool _matchNumberOrdering;
-        private DateTime _lastTreeGridViewRefresh = DateTime.UtcNow;
-        private int _searchDepth = -1;
-        private string _contentPattern;
-        private string _filenamePattern;
-        private readonly TreeGridItemCollection ItemCollection = new TreeGridItemCollection();
+        private volatile bool _searchEnded = true;
 
         public MainForm() : this(true)
         {
             InitializeSubdirectoryPicker();
-            InitializeResultsExplorer();
+            InitializeResultExplorer();
         }
 
         private void InitializeSubdirectoryPicker()
@@ -79,7 +72,7 @@ namespace RegexFileSearcher
             cboSubdirectories.ResumeLayout();
             cboSubdirectories.Invalidate();
         }
-        private void InitializeResultsExplorer()
+        private void InitializeResultExplorer()
         {
             var openCell = new CustomCell
             {
@@ -123,169 +116,71 @@ namespace RegexFileSearcher
             Process.Start(fpOpenWith.FilePath.Trim(), path);
         }
 
-        private async void HandleStartSearch(object sender, EventArgs e)
+        private void HandleSearch(object sender, EventArgs e)
         {
-            string searchPath = fpSearchPath.FilePath?.Trim();
-            if (string.IsNullOrWhiteSpace(searchPath))
-                return;
-
-            if (!Directory.Exists(searchPath))
-                return;
-
-            try
+            if (_searchEnded)
             {
-                if (_isSearching)
-                {
-                    if (MessageBox.Show("Are you sure you want to stop the search?", "Question",
-                        MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.No) == DialogResult.Yes)
-                    {
-                        _cancellationTokenSource.Cancel();
-                    }
-
-                    return;
-                }
-
-                _isSearching = true;
-
-                _filenamePattern = txtFilenameRegex.Text;
-                _contentPattern = txtContentRegex.Text;
-                _searchDepth = int.Parse(cboSubdirectories.SelectedKey);
-
-                _filenameRegex = FilenameRegex;
-                _contentRegex = ContentRegex;
-
-                ItemCollection.Clear();
-                tvwResultExplorer.ReloadData();
-                btnStartSearch.Text = "Stop Search";
-                lblStatus.Text = string.Empty;
-                btnOrderByMatches.Enabled = false;
-                _cancellationTokenSource = new CancellationTokenSource();
-                CancellationToken token = _cancellationTokenSource.Token;
-                await Task.Factory.StartNew(() => SearchDirectory(0, searchPath, ItemCollection),
-                    token,
-                    TaskCreationOptions.LongRunning,
-                    TaskScheduler.Default);
+                StartSearch();
+                return;
             }
-            catch (Exception ex)
+
+            if (MessageBox.Show("Are you sure you want to stop the search?", "Question",
+                MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.No) == DialogResult.Yes)
             {
-                MessageBox.Show(ex.Message, "Error", MessageBoxType.Error);
+                EndSearch();
             }
-            finally
+        }
+        private void StartSearch()
+        {
+            _searchEnded = false;
+            ItemCollection.Clear();
+            tvwResultExplorer.ReloadData();
+
+            btnStartSearch.Text = "Stop Search";
+            lblStatus.Text = string.Empty;
+            btnOrderByMatches.Enabled = false;
+
+            _cancellationTokenSource = new CancellationTokenSource();
+            var searcher = NewSearcher();
+            searcher.SearchEnded += EndSearch;
+            searcher.CurrentDirectoryChanged += UpdateStatusLabel;
+
+            Task.Factory.StartNew(searcher.StartSearch,
+                _cancellationTokenSource.Token,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
+
+            _updateTimer = new Timer(_ => UpdateResultExplorer(), null, 0, 1000);
+        }
+        private void EndSearch(bool isUserRequested = true)
+        {
+            _updateTimer?.Dispose();
+            if (isUserRequested)
+                _cancellationTokenSource.Cancel();
+
+            Application.Instance.Invoke(() =>
             {
                 tvwResultExplorer.ReloadData();
                 lblStatus.Text = "Search ended";
-                btnOrderByMatches.Enabled = true;
                 btnStartSearch.Text = "Start Search";
-                _isSearching = false;
-            }
+                btnOrderByMatches.Enabled = true;
+            });
+            _searchEnded = true;
         }
-
-        private void SearchDirectory(int level, string path, TreeGridItemCollection treeGridItemCollection)
+        private void UpdateStatusLabel(string dir)
         {
-            if (_cancellationTokenSource.IsCancellationRequested)
-                return;
-
-            if (_searchDepth != -1 && level > _searchDepth)
-                return;
-
-            Application.Instance.Invoke(() => lblStatus.Text = path);
-            List<string> filePaths = GetMatchingFiles(path);
-            foreach (string filePath in filePaths.OrderBy(f => f))
-            {
-                try
-                {
-                    int count = 0;
-                    bool add = false;
-                    if (string.IsNullOrWhiteSpace(_contentPattern))
-                    {
-                        add = true;
-                    }
-                    else
-                    {
-                        MatchCollection matches = _contentRegex.Matches(File.ReadAllText(filePath));
-                        count = matches.Count;
-                        add = count > 0;
-                    }
-                    if (add)
-                    {
-                        treeGridItemCollection.Add(
-                            new TreeGridItem()
-                            {
-                                Values = new object[]
-                                {
-                                    false, // column 0: Selected checkbox
-                                    null, // column 1: Open link
-                                    count,
-                                    filePath
-                                }
-                            });
-                    }
-                }
-                catch
-                {
-                    // Regex timeout, permission issue, whatever else, just skip the file..
-                }
-            }
-
-            UpdateResultExplorer();
-
-            try
-            {
-                foreach (string directoryPath in Directory.GetDirectories(path))
-                {
-                    SearchDirectory(level + 1, directoryPath, treeGridItemCollection);
-                }
-            }
-            catch
-            {
-                // No permission to list directories, etc.
-            }
+            Application.Instance.Invoke(() => lblStatus.Text = dir);
         }
-
-        private List<string> GetMatchingFiles(string path)
-        {
-            List<string> filePaths = new List<string>();
-            try
-            {
-                foreach (string filePath in Directory.GetFiles(path))
-                {
-                    string filename = Path.GetFileName(filePath);
-                    try
-                    {
-                        if (string.IsNullOrWhiteSpace(_filenamePattern) || _filenameRegex.IsMatch(filename))
-                        {
-                            filePaths.Add(filePath);
-                        }
-                    }
-                    catch
-                    {
-                        // Regex timeout
-                    }
-                }
-            }
-            catch
-            {
-                // No permission to list files, etc.
-            }
-
-            return filePaths;
-        }
-
         private void UpdateResultExplorer()
         {
-            if (DateTime.UtcNow - _lastTreeGridViewRefresh > TimeSpan.FromSeconds(1))
+            Application.Instance.Invoke(() =>
             {
-                Application.Instance.Invoke(() =>
+                tvwResultExplorer.ReloadData();
+                if (ItemCollection.Count > 0)
                 {
-                    tvwResultExplorer.ReloadData();
-                    if (ItemCollection.Count > 0)
-                    {
-                        tvwResultExplorer.ScrollToRow(ItemCollection.Count - 1);
-                    }
-                });
-
-                _lastTreeGridViewRefresh = DateTime.UtcNow;
-            }
+                    tvwResultExplorer.ScrollToRow(ItemCollection.Count - 1);
+                }
+            });
         }
 
         private void HandleSelectAll(object sender, EventArgs e)
@@ -357,13 +252,13 @@ namespace RegexFileSearcher
             // reverses meaning of int.CompareTo
             // depending on the current ordering
             int direction = _matchNumberOrdering ? 1 : -1;
-            Comparison<ITreeGridItem> comparison = (item, otherItem) =>
+            int Comparison(ITreeGridItem item, ITreeGridItem otherItem)
             {
-                int a = (int) (item as TreeGridItem)?.GetValue(2);
-                int b = (int) (otherItem as TreeGridItem)?.GetValue(2);
+                int a = (int)(item as TreeGridItem)?.GetValue(2);
+                int b = (int)(otherItem as TreeGridItem)?.GetValue(2);
                 return a.CompareTo(b) * direction;
-            };
-            ItemCollection.Sort(comparison);
+            }
+            ItemCollection.Sort(Comparison);
 
             _matchNumberOrdering = !_matchNumberOrdering;
 

@@ -4,13 +4,21 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 using Eto.Forms;
 
 namespace RegexFileSearcher
 {
     internal class RegexSearcher
     {
-        public bool IsSearching { get; private set; }
+        public event Action<bool> SearchEnded;
+        protected void OnSearchEnded()
+        {
+            _searchEnded = true;
+            SearchEnded?.Invoke(false);
+        }
+        public event Action<string> CurrentDirectoryChanged;
+        protected void OnCurrentDirectoryChanged() => CurrentDirectoryChanged?.Invoke(CurrentDirectory);
         public string CurrentDirectory { get; set; }
         private readonly int Depth;
         private readonly string SearchDirectory;
@@ -18,7 +26,8 @@ namespace RegexFileSearcher
         private readonly Regex FilenameRegex, ContentRegex;
         private readonly CancellationToken CancellationToken;
         private readonly TreeGridItemCollection ItemCollection;
-
+        private static readonly object addLocker = new object();
+        private static volatile bool _searchEnded;
         // waiting for init-only properties in C# 9
         public RegexSearcher(string searchDir, int depth,
                              Regex fileRegex, Regex contentRegex,
@@ -35,13 +44,12 @@ namespace RegexFileSearcher
         }
         public void StartSearch()
         {
-            if (SearchDirectory?.Trim()?.Length == 0)
+            if (SearchDirectory?.Trim()?.Length == 0 || !Directory.Exists(SearchDirectory))
+            {
+                OnSearchEnded();
                 return;
+            }
 
-            if (!Directory.Exists(SearchDirectory))
-                return;
-
-            IsSearching = true;
             switch (FilenameRegex, ContentRegex)
             {
                 case (null, null):
@@ -56,7 +64,7 @@ namespace RegexFileSearcher
                     MatchWith(AllMatcher);
                     break;
             }
-            IsSearching = false;
+            OnSearchEnded();
         }
         private static readonly EnumerationOptions options = new EnumerationOptions { IgnoreInaccessible = true };
         private IEnumerable<IEnumerable<string>> EnumerateFiles(string dir, int currentDepth)
@@ -65,7 +73,7 @@ namespace RegexFileSearcher
                 yield break;
 
             CurrentDirectory = dir;
-
+            OnCurrentDirectoryChanged();
             // although  IgnoreInaccessible  is true by default
             // it only applies when you use the proper overload
             yield return Directory.EnumerateFiles(dir, "*", options);
@@ -79,16 +87,17 @@ namespace RegexFileSearcher
         {
             try
             {
-                EnumerateFiles(SearchDirectory, Depth)
-                .AsParallel()
-                .WithCancellation(CancellationToken)
-                .ForAll(files =>
+                foreach (var files in EnumerateFiles(SearchDirectory, Depth))
                 {
                     if (CancellationToken.IsCancellationRequested)
                         return;
 
-                    files.AsParallel().ForAll(matcher);
-                });
+                    files
+                    .AsParallel()
+                    .WithCancellation(CancellationToken)
+                    .WithDegreeOfParallelism(Math.Max(1, Environment.ProcessorCount - 1))
+                    .ForAll(matcher);
+                }
             }
             catch
             {
@@ -99,8 +108,11 @@ namespace RegexFileSearcher
             try
             {
                 fileName = Path.GetFileName(fileName);
+                if (CancellationToken.IsCancellationRequested)
+                    return;
                 if (!FilenameRegex.IsMatch(fileName))
                     return;
+
                 Add(fileName);
             }
             catch
@@ -111,27 +123,20 @@ namespace RegexFileSearcher
         {
             try
             {
-                var fi = new FileInfo(fileName);
-                using var reader = fi.OpenText();
+                const int BUFFER_SIZE = 1024 * 1024 * 15;
+                var fileReader = File.OpenText(fileName);
+                var buffer = new char[BUFFER_SIZE];
                 int count = 0;
-
-                // if less than 50 MB
-                if (fi.Length < 1024 * 1024 * 50)
+                while (fileReader.ReadBlock(buffer, 0, BUFFER_SIZE) != 0)
                 {
-                    string input = reader.ReadToEnd();
-                    count = ContentRegex.Matches(input).Count;
+                    if (CancellationToken.IsCancellationRequested)
+                        break;
+                    // expensive  and  allocating
+                    // waiting for regex span APIs
+                    count += ContentRegex.Matches(new string(buffer)).Count;
                 }
-                else
-                {
-                    // 10 MB read buffer
-                    const int BUFFER_SIZE = 1024 * 1024 * 10;
-                    var readBuffer = new char[BUFFER_SIZE];
-                    while (reader.ReadBlock(readBuffer) != 0)
-                    {
-                        count += ContentRegex.Matches(new string(readBuffer)).Count;
-                    }
-                }
-                Add(fileName, count);
+                if (count > 0)
+                    Add(fileName, count);
             }
             catch
             {
@@ -141,28 +146,24 @@ namespace RegexFileSearcher
         {
             try
             {
+                if (CancellationToken.IsCancellationRequested)
+                    return;
                 if (!FilenameRegex.IsMatch(Path.GetFileName(fileName)))
                     return;
 
-                var fi = new FileInfo(fileName);
-                using var reader = fi.OpenText();
+                const int BUFFER_SIZE = 1024 * 1024 * 15;
+                var fileReader = File.OpenText(fileName);
+                var buffer = new char[BUFFER_SIZE];
                 int count = 0;
+                while (fileReader.ReadBlock(buffer, 0, BUFFER_SIZE) != 0)
+                {
+                    if (CancellationToken.IsCancellationRequested)
+                        break;
 
-                if (fi.Length < 1024 * 1024 * 50)
-                {
-                    string input = reader.ReadToEnd();
-                    count = ContentRegex.Matches(input).Count;
+                    count += ContentRegex.Matches(new string(buffer)).Count;
                 }
-                else
-                {
-                    const int BUFFER_SIZE = 1024 * 1024 * 5;
-                    var readBuffer = new char[BUFFER_SIZE];
-                    while (reader.ReadBlock(readBuffer) != 0)
-                    {
-                        count += ContentRegex.Matches(new string(readBuffer)).Count;
-                    }
-                }
-                Add(fileName, count);
+                if (count > 0)
+                    Add(fileName, count);
             }
             catch
             {
@@ -172,7 +173,11 @@ namespace RegexFileSearcher
         {
             // false: selected @ column 0
             // null:  custom cell for open link button @ column 1
-            ItemCollection.Add(new TreeGridItem(false, null, count, fileName));
+            lock (addLocker)
+            {
+                if (!_searchEnded)
+                    ItemCollection.Add(new TreeGridItem(false, null, count, fileName));
+            }
         }
     }
 }

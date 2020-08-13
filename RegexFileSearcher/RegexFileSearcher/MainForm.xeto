@@ -131,7 +131,7 @@
     </TableRow>
     <TableRow>
       <TableCell>
-        <Button ID="btnStartSearch" Click="HandleStartSearch">Start Search</Button>
+        <Button ID="btnStartSearch" Click="HandleSearch">Start Search</Button>
       </TableCell>
     </TableRow>
     <TableRow>
