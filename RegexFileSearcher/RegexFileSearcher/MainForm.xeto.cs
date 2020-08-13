@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Eto.Forms;
-using Eto.Drawing;
-using Eto.Serialization.Xaml;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.IO;
@@ -57,9 +55,11 @@ namespace RegexFileSearcher
         private int _searchDepth = -1;
         private string _contentPattern;
         private string _filenamePattern;
+        private TreeGridItemCollection ItemCollection = new TreeGridItemCollection();
 
         public MainForm() : this(true)
         {
+            tvwResultExplorer.DataStore = ItemCollection;
             AddSubdirectoriesItems();
             AddTestResultExplorerColumns();
         }
@@ -178,15 +178,14 @@ namespace RegexFileSearcher
                 _filenameRegex = FilenameRegex;
                 _contentRegex = ContentRegex;
 
-                var treeGridItemCollection = new TreeGridItemCollection();
-                tvwResultExplorer.DataStore = treeGridItemCollection;
+                ItemCollection.Clear();
                 tvwResultExplorer.ReloadData();
                 btnStartSearch.Text = "Stop Search";
                 lblStatus.Text = string.Empty;
                 btnOrderByMatches.Enabled = false;
                 _cancellationTokenSource = new CancellationTokenSource();
                 CancellationToken token = _cancellationTokenSource.Token;
-                await Task.Factory.StartNew(() => SearchDirectory(0, searchPath, treeGridItemCollection),
+                await Task.Factory.StartNew(() => SearchDirectory(0, searchPath, ItemCollection),
                     token,
                     TaskCreationOptions.LongRunning,
                     TaskScheduler.Default);
@@ -303,9 +302,9 @@ namespace RegexFileSearcher
                 Application.Instance.Invoke(() =>
                 {
                     tvwResultExplorer.ReloadData();
-                    if (tvwResultExplorer.DataStore.Count > 0)
+                    if (ItemCollection.Count > 0)
                     {
-                        tvwResultExplorer.ScrollToRow(tvwResultExplorer.DataStore.Count - 1);
+                        tvwResultExplorer.ScrollToRow(ItemCollection.Count - 1);
                     }
                 });
 
@@ -325,9 +324,9 @@ namespace RegexFileSearcher
 
         private void SelectAll(bool value)
         {
-            foreach (var item in tvwResultExplorer.DataStore as TreeGridItemCollection)
+            foreach (TreeGridItem item in ItemCollection)
             {
-                (item as TreeGridItem).SetValue(0, value);
+                item.SetValue(0, value);
             }
 
             tvwResultExplorer.ReloadData();
@@ -335,10 +334,9 @@ namespace RegexFileSearcher
 
         private void HandleInvertSelection(object sender, EventArgs e)
         {
-            foreach (var item in tvwResultExplorer.DataStore as TreeGridItemCollection)
+            foreach (TreeGridItem item in ItemCollection)
             {
-                var row = (item as TreeGridItem);
-                row.SetValue(0, !(bool)row.GetValue(0));
+                item.SetValue(0, !(bool)item.GetValue(0));
             }
 
             tvwResultExplorer.ReloadData();
@@ -350,13 +348,12 @@ namespace RegexFileSearcher
                 return;
 
             List<string> filesToOpen = new List<string>();
-            foreach (var item in tvwResultExplorer.DataStore as TreeGridItemCollection)
+            foreach (TreeGridItem item in ItemCollection)
             {
-                var row = (item as TreeGridItem);
-                bool isSelected = (bool)row.GetValue(0);
+                bool isSelected = (bool)item.GetValue(0);
                 if (isSelected)
                 {
-                    filesToOpen.Add((string)row.GetValue(3));
+                    filesToOpen.Add((string)item.GetValue(3));
                 }
             }
 
@@ -381,20 +378,20 @@ namespace RegexFileSearcher
 
         private void HandleOrderByMatches(object sender, EventArgs e)
         {
-            if (_matchNumberOrdering)
+            // reverses meaning of int.CompareTo
+            // depending on the current ordering
+            int direction = _matchNumberOrdering ? 1 : -1;
+            Comparison<ITreeGridItem> comparison = (item, otherItem) =>
             {
-                tvwResultExplorer.DataStore = new TreeGridItemCollection((tvwResultExplorer.DataStore as TreeGridItemCollection)
-                    .OrderBy(i => (int)(i as TreeGridItem).GetValue(2)));
-            }
-            else
-            {
-                tvwResultExplorer.DataStore = new TreeGridItemCollection((tvwResultExplorer.DataStore as TreeGridItemCollection)
-                    .OrderByDescending(i => (int)(i as TreeGridItem).GetValue(2)));
-            }
+                int a = (int) (item as TreeGridItem)?.GetValue(2);
+                int b = (int) (otherItem as TreeGridItem)?.GetValue(2);
+                return a.CompareTo(b) * direction;
+            };
+            ItemCollection.Sort(comparison);
 
             _matchNumberOrdering = !_matchNumberOrdering;
 
-            if (tvwResultExplorer.DataStore.Count > 0)
+            if (ItemCollection.Count > 0)
             {
                 tvwResultExplorer.ScrollToRow(0);
             }
