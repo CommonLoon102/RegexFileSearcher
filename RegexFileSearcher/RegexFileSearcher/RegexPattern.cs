@@ -5,22 +5,22 @@ using System.Text.RegularExpressions;
 
 namespace RegexFileSearcher
 {
-class RegexPattern
+    internal class RegexPattern
     {
-        public string Pattern { get; set; }
-        public string ReplacementText { get; set; }
-        public bool IsCompiled { get; set; }
-        public bool IsIgnoreCase { get; set; }
-        public bool IsMultiline { get; set; }
-        public bool IsExplicitCapture { get; set; }
-        public bool IsEcmaScript { get; set; }
-        public bool IsIgnoreWhite { get; set; }
-        public bool IsSingleLine { get; set; }
-        public bool IsRightToLeft { get; set; }
-        public bool IsCultureInvariant { get; set; }
-        public int Timeout { get; set; }
+        public string Pattern;
+        public string ReplacementText;
+        public bool IsCompiled;
+        public bool IsIgnoreCase;
+        public bool IsMultiline;
+        public bool IsExplicitCapture;
+        public bool IsEcmaScript;
+        public bool IsIgnoreWhite;
+        public bool IsSingleLine;
+        public bool IsRightToLeft;
+        public bool IsCultureInvariant;
+        public int Timeout;
 
-        public Regex Regex => new Regex(Pattern, RegexOptions, TimeSpan.FromMilliseconds(Timeout));
+        public Regex Regex => new Regex(Pattern, RegexOptions, TimeSpan.FromSeconds(Timeout));
 
         private RegexOptions RegexOptions
         {

@@ -55,7 +55,7 @@ namespace RegexFileSearcher
         private int _searchDepth = -1;
         private string _contentPattern;
         private string _filenamePattern;
-        private TreeGridItemCollection ItemCollection = new TreeGridItemCollection();
+        private readonly TreeGridItemCollection ItemCollection = new TreeGridItemCollection();
 
         public MainForm() : this(true)
         {
