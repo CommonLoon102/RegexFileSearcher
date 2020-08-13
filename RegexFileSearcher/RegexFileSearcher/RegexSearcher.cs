@@ -19,7 +19,7 @@ namespace RegexFileSearcher
         }
         public event Action<string> CurrentDirectoryChanged;
         protected void OnCurrentDirectoryChanged() => CurrentDirectoryChanged?.Invoke(CurrentDirectory);
-        public string CurrentDirectory { get; set; }
+        public string CurrentDirectory { get; private set; }
         private readonly int Depth;
         private readonly string SearchDirectory;
         private readonly bool RecurseSubdirectories;
