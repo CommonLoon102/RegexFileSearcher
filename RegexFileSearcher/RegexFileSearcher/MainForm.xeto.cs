@@ -50,9 +50,8 @@ namespace RegexFileSearcher
                 Timeout = (int)nudContentTimeout.Value
             }.Regex;
 
-        private bool _isSearching;
+        private volatile bool _isSearching;
         private CancellationTokenSource _cancellationTokenSource;
-        private static readonly object _locker = new object();
         private bool _matchNumberOrdering;
         private DateTime _lastTreeGridViewRefresh = DateTime.UtcNow;
         private int _searchDepth = -1;
@@ -159,21 +158,18 @@ namespace RegexFileSearcher
 
             try
             {
-                lock (_locker)
+                if (_isSearching)
                 {
-                    if (_isSearching)
+                    if (MessageBox.Show("Are you sure you want to stop the search?", "Question",
+                        MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.No) == DialogResult.Yes)
                     {
-                        if (MessageBox.Show("Are you sure you want to stop the search?", "Question",
-                            MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.No) == DialogResult.Yes)
-                        {
-                            _cancellationTokenSource.Cancel();
-                        }
-
-                        return;
+                        _cancellationTokenSource.Cancel();
                     }
 
-                    _isSearching = true;
+                    return;
                 }
+
+                _isSearching = true;
 
                 _filenamePattern = txtFilenameRegex.Text;
                 _contentPattern = txtContentRegex.Text;
