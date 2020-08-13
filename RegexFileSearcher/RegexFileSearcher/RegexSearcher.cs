@@ -26,7 +26,7 @@ namespace RegexFileSearcher
         private readonly Regex FilenameRegex, ContentRegex;
         private readonly CancellationToken CancellationToken;
         private readonly TreeGridItemCollection ItemCollection;
-        private static readonly object addLocker = new object();
+        public static readonly object collectionLocker = new object();
         private static volatile bool _searchEnded;
         // waiting for init-only properties in C# 9
         public RegexSearcher(string searchDir, int depth,
@@ -41,6 +41,7 @@ namespace RegexFileSearcher
             ContentRegex = contentRegex;
             ItemCollection = itemCollection;
             CancellationToken = token;
+            _searchEnded = false;
         }
         public void StartSearch()
         {
@@ -96,6 +97,7 @@ namespace RegexFileSearcher
                     .AsParallel()
                     .WithCancellation(CancellationToken)
                     .WithDegreeOfParallelism(Math.Max(1, Environment.ProcessorCount - 1))
+                    .Select(x => x)
                     .ForAll(matcher);
                 }
             }
@@ -123,17 +125,25 @@ namespace RegexFileSearcher
         {
             try
             {
-                const int BUFFER_SIZE = 1024 * 1024 * 15;
-                var fileReader = File.OpenText(fileName);
-                var buffer = new char[BUFFER_SIZE];
+                var fi = new FileInfo(fileName);
+                using var fileReader = fi.OpenText();
                 int count = 0;
-                while (fileReader.ReadBlock(buffer, 0, BUFFER_SIZE) != 0)
+                if (fi.Length <= 50 * 1024 * 1024)
                 {
-                    if (CancellationToken.IsCancellationRequested)
-                        break;
-                    // expensive  and  allocating
-                    // waiting for regex span APIs
-                    count += ContentRegex.Matches(new string(buffer)).Count;
+                    count = ContentRegex.Matches(fileReader.ReadToEnd()).Count;
+                }
+                else
+                {
+                    const int BUFFER_SIZE = 1024 * 1024 * 10;
+                    var buffer = new char[BUFFER_SIZE];
+                    while (fileReader.ReadBlock(buffer, 0, BUFFER_SIZE) != 0)
+                    {
+                        if (CancellationToken.IsCancellationRequested)
+                            break;
+                        // expensive  and  allocating
+                        // waiting for regex span APIs
+                        count += ContentRegex.Matches(new string(buffer)).Count;
+                    }
                 }
                 if (count > 0)
                     Add(fileName, count);
@@ -151,16 +161,23 @@ namespace RegexFileSearcher
                 if (!FilenameRegex.IsMatch(Path.GetFileName(fileName)))
                     return;
 
-                const int BUFFER_SIZE = 1024 * 1024 * 15;
-                var fileReader = File.OpenText(fileName);
-                var buffer = new char[BUFFER_SIZE];
+                var fi = new FileInfo(fileName);
+                using var fileReader = fi.OpenText();
                 int count = 0;
-                while (fileReader.ReadBlock(buffer, 0, BUFFER_SIZE) != 0)
+                if (fi.Length < 50 * 1024 * 1024)
                 {
-                    if (CancellationToken.IsCancellationRequested)
-                        break;
-
-                    count += ContentRegex.Matches(new string(buffer)).Count;
+                    count = ContentRegex.Matches(fileReader.ReadToEnd()).Count;
+                }
+                else
+                {
+                    const int BUFFER_SIZE = 1024 * 1024 * 10;
+                    var buffer = new char[BUFFER_SIZE];
+                    while (fileReader.ReadBlock(buffer, 0, BUFFER_SIZE) != 0)
+                    {
+                        if (CancellationToken.IsCancellationRequested)
+                            break;
+                        count += ContentRegex.Matches(new string(buffer)).Count;
+                    }
                 }
                 if (count > 0)
                     Add(fileName, count);
@@ -173,7 +190,7 @@ namespace RegexFileSearcher
         {
             // false: selected @ column 0
             // null:  custom cell for open link button @ column 1
-            lock (addLocker)
+            lock (collectionLocker)
             {
                 if (!_searchEnded)
                     ItemCollection.Add(new TreeGridItem(false, null, count, fileName));

@@ -115,7 +115,6 @@ namespace RegexFileSearcher
         {
             Process.Start(fpOpenWith.FilePath.Trim(), path);
         }
-
         private void HandleSearch(object sender, EventArgs e)
         {
             if (_searchEnded)
@@ -138,6 +137,7 @@ namespace RegexFileSearcher
 
             btnStartSearch.Text = "Stop Search";
             lblStatus.Text = string.Empty;
+            txtPath.Text = string.Empty;
             btnOrderByMatches.Enabled = false;
 
             _cancellationTokenSource = new CancellationTokenSource();
@@ -175,10 +175,13 @@ namespace RegexFileSearcher
         {
             Application.Instance.Invoke(() =>
             {
-                tvwResultExplorer.ReloadData();
-                if (ItemCollection.Count > 0)
+                lock (RegexSearcher.collectionLocker)
                 {
-                    tvwResultExplorer.ScrollToRow(ItemCollection.Count - 1);
+                    tvwResultExplorer.ReloadData();
+                    if (ItemCollection.Count > 0)
+                    {
+                        tvwResultExplorer.ScrollToRow(ItemCollection.Count - 1);
+                    }
                 }
             });
         }
