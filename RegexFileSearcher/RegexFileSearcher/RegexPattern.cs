@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace RegexFileSearcher
@@ -20,7 +18,7 @@ namespace RegexFileSearcher
         public bool IsCultureInvariant;
         public int Timeout;
 
-        public Regex Regex => new Regex(Pattern, RegexOptions, TimeSpan.FromSeconds(Timeout));
+        public Regex Regex => new Regex(Pattern, RegexOptions, TimeSpan.FromMilliseconds(Timeout));
 
         private RegexOptions RegexOptions
         {
