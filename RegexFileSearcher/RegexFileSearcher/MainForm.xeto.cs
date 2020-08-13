@@ -59,16 +59,15 @@ namespace RegexFileSearcher
 
         public MainForm() : this(true)
         {
-            tvwResultExplorer.DataStore = ItemCollection;
-            AddSubdirectoriesItems();
-            AddTestResultExplorerColumns();
+            InitializeSubdirectoryPicker();
+            InitializeResultsExplorer();
         }
 
-        private void AddSubdirectoriesItems()
+        private void InitializeSubdirectoryPicker()
         {
             cboSubdirectories.SuspendLayout();
-            cboSubdirectories.Items.Add("all (unlimited depth)", "-1");
-            cboSubdirectories.Items.Add("current dir only", "0");
+            cboSubdirectories.Items.Add("All (unlimited depth)", "-1");
+            cboSubdirectories.Items.Add("Current directory only", "0");
             cboSubdirectories.Items.Add("1 level", "1");
             for (int i = 2; i <= 32; i++)
             {
@@ -80,57 +79,34 @@ namespace RegexFileSearcher
             cboSubdirectories.ResumeLayout();
             cboSubdirectories.Invalidate();
         }
-
-        private void AddTestResultExplorerColumns()
+        private void InitializeResultsExplorer()
         {
-            tvwResultExplorer.Columns.Add(new GridColumn()
+            var openCell = new CustomCell
             {
-                HeaderText = "Select",
-                DataCell = new CheckBoxCell(0),
-                Editable = true
-            });
-
-            tvwResultExplorer.Columns.Add(new GridColumn()
-            {
-                HeaderText = "Open",
-                DataCell = new CustomCell()
+                CreateCell = e => new LinkButton
                 {
-                    CreateCell = r =>
-                    {
-                        var item = r.Item as TreeGridItem;
-
-                        void Click(object btnSender, EventArgs btnArgs)
-                        {
-                            if (CheckEditor())
-                                OpenInEditor((string)item.GetValue(3));
-                        }
-
-                        var button = new LinkButton
-                        {
-                            Text = $"Open",
-                            Command = new Command(Click)
-                        };
-
-                        return button;
-                    }
+                    Text = "Open",
+                    Command = new Command((_, __) => HandleOpenItem(e.Item))
                 }
-            });
-
-            tvwResultExplorer.Columns.Add(new GridColumn()
+            };
+            var columns = new[]
             {
-                HeaderText = "Matches",
-                DataCell = new TextBoxCell(2)
-            });
-
-            tvwResultExplorer.Columns.Add(new GridColumn()
-            {
-                HeaderText = "Path",
-                DataCell = new TextBoxCell(3)
-            });
-
+                new GridColumn { HeaderText = "Select",  DataCell = new CheckBoxCell(0), Editable = true },
+                new GridColumn { HeaderText = "Open",    DataCell = openCell },
+                new GridColumn { HeaderText = "Matches", DataCell = new TextBoxCell(2) },
+                new GridColumn { HeaderText = "Path",    DataCell = new TextBoxCell(3) },
+            };
+            Array.ForEach(columns, tvwResultExplorer.Columns.Add);
             tvwResultExplorer.AllowMultipleSelection = false;
+            tvwResultExplorer.DataStore = ItemCollection;
         }
 
+        private void HandleOpenItem(object item)
+        {
+            var tgItem = item as TreeGridItem;
+            if (CheckEditor())
+                OpenInEditor((string)tgItem.GetValue(3));
+        }
         private bool CheckEditor()
         {
             if (string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
