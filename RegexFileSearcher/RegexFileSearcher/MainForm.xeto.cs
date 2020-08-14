@@ -107,9 +107,9 @@ namespace RegexFileSearcher
 
         private void HandleOpenItem(object item)
         {
-            var tgItem = item as SearchResultEntry;
+            var entry = item as SearchResultEntry;
             if (CheckEditor())
-                OpenInEditor(tgItem.Path);
+                OpenInEditor(entry.Path);
         }
 
         private bool CheckEditor()
@@ -216,9 +216,9 @@ namespace RegexFileSearcher
 
         private void SelectAll(bool value)
         {
-            foreach (SearchResultEntry item in _itemCollection)
+            foreach (SearchResultEntry entry in _itemCollection)
             {
-                item.IsSelected = value;
+                entry.IsSelected = value;
             }
 
             tvwResultExplorer.ReloadData();
@@ -226,9 +226,9 @@ namespace RegexFileSearcher
 
         private void HandleInvertSelection(object sender, EventArgs e)
         {
-            foreach (SearchResultEntry item in _itemCollection)
+            foreach (SearchResultEntry entry in _itemCollection)
             {
-                item.IsSelected = !item.IsSelected;
+                entry.IsSelected = !entry.IsSelected;
             }
 
             tvwResultExplorer.ReloadData();
@@ -240,11 +240,11 @@ namespace RegexFileSearcher
                 return;
 
             List<string> filesToOpen = new List<string>();
-            foreach (SearchResultEntry item in _itemCollection)
+            foreach (SearchResultEntry entry in _itemCollection)
             {
-                if (item.IsSelected)
+                if (entry.IsSelected)
                 {
-                    filesToOpen.Add(item.Path);
+                    filesToOpen.Add(entry.Path);
                 }
             }
 
