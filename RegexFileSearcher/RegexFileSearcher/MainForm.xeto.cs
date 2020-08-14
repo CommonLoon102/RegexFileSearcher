@@ -257,16 +257,16 @@ namespace RegexFileSearcher
 
         private void HandleOrderByMatches(object sender, EventArgs e)
         {
-            // reverses meaning of int.CompareTo
+            // Reverses meaning of int.CompareTo
             // depending on the current ordering
             int direction = _matchNumberOrdering ? 1 : -1;
-            int Comparison(ITreeGridItem item, ITreeGridItem otherItem)
+            int ComapreItems(ITreeGridItem item, ITreeGridItem otherItem)
             {
                 int a = (int)(item as TreeGridItem)?.GetValue(2);
                 int b = (int)(otherItem as TreeGridItem)?.GetValue(2);
                 return a.CompareTo(b) * direction;
             }
-            _itemCollection.Sort(Comparison);
+            _itemCollection.Sort(ComapreItems);
 
             _matchNumberOrdering = !_matchNumberOrdering;
 
