@@ -28,7 +28,7 @@ namespace RegexFileSearcher
         private readonly TreeGridItemCollection ItemCollection;
         public static readonly object collectionLocker = new object();
         private static volatile bool _searchEnded;
-        // waiting for init-only properties in C# 9
+        // Waiting for init-only properties in C# 9
         public RegexSearcher(string searchDir, int depth,
                              Regex fileRegex, Regex contentRegex,
                              TreeGridItemCollection itemCollection,
