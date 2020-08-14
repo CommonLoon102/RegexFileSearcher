@@ -12,7 +12,7 @@ namespace RegexFileSearcher
     {
         private RegexSearcher NewSearcher() => new RegexSearcher(fpSearchPath.FilePath, SearchDepth, FilenameRegex, ContentRegex, ItemCollection, _cancellationTokenSource.Token);
         private int SearchDepth => int.Parse(cboSubdirectories.SelectedKey);
-        private readonly TreeGridItemCollection ItemCollection = new TreeGridItemCollection();
+        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();
         private Regex FilenameRegex =>
             string.IsNullOrEmpty(txtFilenameRegex.Text)
             ? null : new RegexPattern
