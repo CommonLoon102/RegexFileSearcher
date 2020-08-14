@@ -126,7 +126,7 @@ namespace RegexFileSearcher
                 }
                 catch (OperationCanceledException)
                 {
-                    // Operation cancelled by user
+                    // Operation canceled by user
                 }
             }
         }
