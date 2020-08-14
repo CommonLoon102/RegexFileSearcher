@@ -3,7 +3,7 @@ using Eto.Serialization.Xaml;
 
 namespace RegexFileSearcher
 {
-    partial class MainForm : Form
+    public partial class MainForm : Form
     {
         private readonly TextBox txtFilenameRegex;
         private readonly CheckBox chkCompiled;

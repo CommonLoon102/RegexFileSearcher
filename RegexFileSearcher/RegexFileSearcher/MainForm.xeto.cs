@@ -10,9 +10,19 @@ namespace RegexFileSearcher
 {
     public partial class MainForm : Form
     {
-        private RegexSearcher NewSearcher() => new RegexSearcher(fpSearchPath.FilePath, SearchDepth, FilenameRegex, ContentRegex, ItemCollection, _cancellationTokenSource.Token);
-        private int SearchDepth => int.Parse(cboSubdirectories.SelectedKey);
         private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();
+        private CancellationTokenSource _cancellationTokenSource;
+        private Timer _updateTimer;
+        private bool _matchNumberOrdering;
+        private volatile bool _searchEnded = true;
+
+        public MainForm() : this(initializeControls: true)
+        {
+            InitializeSubdirectoryPicker();
+            InitializeResultExplorer();
+        }
+
+        private int SearchDepth => int.Parse(cboSubdirectories.SelectedKey);
         private Regex FilenameRegex =>
             string.IsNullOrEmpty(txtFilenameRegex.Text)
             ? null : new RegexPattern
@@ -45,15 +55,10 @@ namespace RegexFileSearcher
                 IsSingleLine = chkContentSingleLine.Checked ?? false,
                 Timeout = (int)nudContentTimeout.Value
             }.Regex;
-        private CancellationTokenSource _cancellationTokenSource;
-        private Timer _updateTimer;
-        private bool _matchNumberOrdering;
-        private volatile bool _searchEnded = true;
-
-        public MainForm() : this(initializeControls: true)
+        private RegexSearcher NewSearcher()
         {
-            InitializeSubdirectoryPicker();
-            InitializeResultExplorer();
+            return new RegexSearcher(fpSearchPath.FilePath, SearchDepth, FilenameRegex, ContentRegex,
+                                     _itemCollection,_cancellationTokenSource.Token);
         }
 
         private void InitializeSubdirectoryPicker()
@@ -91,7 +96,7 @@ namespace RegexFileSearcher
             };
             Array.ForEach(columns, tvwResultExplorer.Columns.Add);
             tvwResultExplorer.AllowMultipleSelection = false;
-            tvwResultExplorer.DataStore = ItemCollection;
+            tvwResultExplorer.DataStore = _itemCollection;
         }
 
         private void HandleOpenItem(object item)
@@ -132,7 +137,7 @@ namespace RegexFileSearcher
         private void StartSearch()
         {
             _searchEnded = false;
-            ItemCollection.Clear();
+            _itemCollection.Clear();
             tvwResultExplorer.ReloadData();
 
             btnStartSearch.Text = "Stop Search";
@@ -175,12 +180,12 @@ namespace RegexFileSearcher
         {
             Application.Instance.Invoke(() =>
             {
-                lock (ItemCollection)
+                lock (_itemCollection)
                 {
                     tvwResultExplorer.ReloadData();
-                    if (ItemCollection.Count > 0)
+                    if (_itemCollection.Count > 0)
                     {
-                        tvwResultExplorer.ScrollToRow(ItemCollection.Count - 1);
+                        tvwResultExplorer.ScrollToRow(_itemCollection.Count - 1);
                     }
                 }
             });
@@ -198,7 +203,7 @@ namespace RegexFileSearcher
 
         private void SelectAll(bool value)
         {
-            foreach (TreeGridItem item in ItemCollection)
+            foreach (TreeGridItem item in _itemCollection)
             {
                 item.SetValue(0, value);
             }
@@ -208,7 +213,7 @@ namespace RegexFileSearcher
 
         private void HandleInvertSelection(object sender, EventArgs e)
         {
-            foreach (TreeGridItem item in ItemCollection)
+            foreach (TreeGridItem item in _itemCollection)
             {
                 item.SetValue(0, !(bool)item.GetValue(0));
             }
@@ -222,7 +227,7 @@ namespace RegexFileSearcher
                 return;
 
             List<string> filesToOpen = new List<string>();
-            foreach (TreeGridItem item in ItemCollection)
+            foreach (TreeGridItem item in _itemCollection)
             {
                 bool isSelected = (bool)item.GetValue(0);
                 if (isSelected)
@@ -261,11 +266,11 @@ namespace RegexFileSearcher
                 int b = (int)(otherItem as TreeGridItem)?.GetValue(2);
                 return a.CompareTo(b) * direction;
             }
-            ItemCollection.Sort(Comparison);
+            _itemCollection.Sort(Comparison);
 
             _matchNumberOrdering = !_matchNumberOrdering;
 
-            if (ItemCollection.Count > 0)
+            if (_itemCollection.Count > 0)
             {
                 tvwResultExplorer.ScrollToRow(0);
             }
