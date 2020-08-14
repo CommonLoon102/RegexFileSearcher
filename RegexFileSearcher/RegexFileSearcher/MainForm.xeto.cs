@@ -50,7 +50,7 @@ namespace RegexFileSearcher
         private bool _matchNumberOrdering;
         private volatile bool _searchEnded = true;
 
-        public MainForm() : this(true)
+        public MainForm() : this(initializeControls: true)
         {
             InitializeSubdirectoryPicker();
             InitializeResultExplorer();
