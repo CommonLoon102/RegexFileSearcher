@@ -17,6 +17,7 @@ namespace RegexFileSearcher
         private readonly Regex _filenameRegex, _contentRegex;
         private readonly CancellationToken _cancellationToken;
         private readonly TreeGridItemCollection _itemCollection;
+        private string _currentDirectory;
         private static readonly EnumerationOptions options = new EnumerationOptions { IgnoreInaccessible = true };
         private static volatile bool _searchEnded;
         // Waiting for init-only properties in C# 9
@@ -34,7 +35,17 @@ namespace RegexFileSearcher
             _cancellationToken = token;
             _searchEnded = false;
         }
-        public string CurrentDirectory { get; private set; }
+        public string CurrentDirectory
+        {
+            get => _currentDirectory;
+            set
+            {
+                // No need to check against the current value,
+                // because a repeating directory path is not currently possible
+                _currentDirectory = value;
+                OnCurrentDirectoryChanged();
+            }
+        }
         public event Action<bool> SearchEnded;
         public event Action<string> CurrentDirectoryChanged;
         public void StartSearch()
@@ -77,8 +88,8 @@ namespace RegexFileSearcher
             IEnumerable<string> files = null;
             try
             {
-                // Although  IgnoreInaccessible  is true by default,
-                // it only applies when you use the proper overload
+                // Although   IgnoreInaccessible  is  true  by  default,
+                // it only applies when you use the 3 parameter overload
                 files = Directory.EnumerateFiles(dir, "*", options);
             }
             catch
