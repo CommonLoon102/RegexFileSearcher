@@ -58,7 +58,7 @@ namespace RegexFileSearcher
         private RegexSearcher NewSearcher()
         {
             return new RegexSearcher(fpSearchPath.FilePath, SearchDepth, FilenameRegex, ContentRegex,
-                                     _itemCollection,_cancellationTokenSource.Token);
+                                     _itemCollection, _cancellationTokenSource.Token);
         }
 
         private void InitializeSubdirectoryPicker()
@@ -166,6 +166,10 @@ namespace RegexFileSearcher
             Application.Instance.Invoke(() =>
             {
                 tvwResultExplorer.ReloadData();
+                if (_itemCollection.Count > 0)
+                {
+                    tvwResultExplorer.ScrollToRow(_itemCollection.Count - 1);
+                }
                 lblStatus.Text = "Search ended";
                 btnStartSearch.Text = "Start Search";
                 btnOrderByMatches.Enabled = true;
