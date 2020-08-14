@@ -187,7 +187,7 @@ namespace RegexFileSearcher
                 lock (_itemCollection)
                 {
                     tvwResultExplorer.ReloadData();
-                    if (_itemCollection.Count > 0)
+                    if (_itemCollection.Any())
                     {
                         tvwResultExplorer.ScrollToRow(_itemCollection.Count - 1);
                     }
