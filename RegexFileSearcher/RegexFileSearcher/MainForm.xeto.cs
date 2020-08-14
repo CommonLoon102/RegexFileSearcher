@@ -270,7 +270,7 @@ namespace RegexFileSearcher
                 int b = (int)(otherItem as TreeGridItem)?.GetValue(2);
                 return a.CompareTo(b) * direction;
             }
-            _itemCollection.Sort(ComapreItems);
+            _itemCollection.Sort(CompareItems);
 
             _matchNumberOrdering = !_matchNumberOrdering;
 
