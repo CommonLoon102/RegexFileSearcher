@@ -111,7 +111,6 @@ namespace RegexFileSearcher
             }
 
             yield return files;
-
             // Any direcotry path exception has already been handled above
             foreach (var subDir in Directory.EnumerateDirectories(dir, "*", options))
             {
@@ -126,13 +125,20 @@ namespace RegexFileSearcher
             {
                 if (_cancellationToken.IsCancellationRequested)
                     return;
+
                 try
                 {
                     files
                     .AsParallel()
                     .WithCancellation(_cancellationToken)
                     .WithDegreeOfParallelism(Math.Max(1, Environment.ProcessorCount - 1))
-                    .ForAll(matcher);
+                    .ForAll(fileName =>
+                    {
+                        if (_cancellationToken.IsCancellationRequested)
+                            return;
+
+                        matcher(fileName);
+                    });
                 }
                 catch (OperationCanceledException)
                 {
@@ -143,47 +149,16 @@ namespace RegexFileSearcher
 
         private void MatchOnFilename(string fileName)
         {
-            if (_cancellationToken.IsCancellationRequested)
-                return;
-
             if (IsMatchingFilename(fileName))
                 Add(fileName);
         }
 
-        private bool IsMatchingFilename(string fileName)
-        {
-            fileName = Path.GetFileName(fileName);
-            return _filenameRegex.IsMatch(fileName);
-        }
-
         private void MatchOnContent(string fileName)
         {
-            // ReadToEnd any file below 50 MB
-            const int SmallFileSize = 50 * 1024 * 1024;
-            // 10 MB buffer size for reading large files
-            const int BigFileBufferSize = 10 * 1024 * 1024;
-            int count = 0;
             try
             {
-                var fi = new FileInfo(fileName);
-                using var fileReader = fi.OpenText();
-                if (fi.Length <= SmallFileSize)
-                {
-                    count = _contentRegex.Matches(fileReader.ReadToEnd()).Count;
-                }
-                else
-                {
-                    var buffer = new char[BigFileBufferSize];
-                    while (fileReader.ReadBlock(buffer, 0, BigFileBufferSize) != 0)
-                    {
-                        if (_cancellationToken.IsCancellationRequested)
-                            break;
-                        // Expensive  and   allocating.
-                        // Waiting for regex span APIs.
-                        count += _contentRegex.Matches(new string(buffer)).Count;
-                    }
-                }
-
+                using var fileReader = File.OpenText(fileName);
+                int count = _contentRegex.Matches(fileReader.ReadToEnd()).Count;
                 if (count > 0)
                     Add(fileName, count);
             }
@@ -195,11 +170,14 @@ namespace RegexFileSearcher
 
         private void MatchAll(string fileName)
         {
-            if (_cancellationToken.IsCancellationRequested)
-                return;
-
             if (IsMatchingFilename(fileName))
                 MatchOnContent(fileName);
+        }
+
+        private bool IsMatchingFilename(string fileName)
+        {
+            fileName = Path.GetFileName(fileName);
+            return _filenameRegex.IsMatch(fileName);
         }
 
         private void Add(string fileName, int count = 0)
@@ -208,8 +186,6 @@ namespace RegexFileSearcher
             {
                 if (!_searchEnded)
                 {
-                    // false: selected CheckBox @ column 0
-                    // null:  custom cell for open LinkButton @ column 1
                     _itemCollection.Add(new SearchResultEntry { Matches = count, Path = fileName });
                 }
             }
