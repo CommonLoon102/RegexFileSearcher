@@ -264,7 +264,7 @@ namespace RegexFileSearcher
             // Reverses meaning of int.CompareTo
             // depending on the current ordering
             int direction = _matchNumberOrdering ? 1 : -1;
-            int ComapreItems(ITreeGridItem item, ITreeGridItem otherItem)
+            int CompareItems(ITreeGridItem item, ITreeGridItem otherItem)
             {
                 int a = (int)(item as TreeGridItem)?.GetValue(2);
                 int b = (int)(otherItem as TreeGridItem)?.GetValue(2);
