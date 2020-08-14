@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Linq;
 
 namespace RegexFileSearcher
 {
@@ -39,6 +40,7 @@ namespace RegexFileSearcher
                 IsSingleLine = chkSingleLine.Checked ?? false,
                 Timeout = (int)nudTimeout.Value
             }.Regex;
+
         private Regex ContentRegex =>
             string.IsNullOrEmpty(txtContentRegex.Text)
             ? null : new RegexPattern
@@ -55,6 +57,7 @@ namespace RegexFileSearcher
                 IsSingleLine = chkContentSingleLine.Checked ?? false,
                 Timeout = (int)nudContentTimeout.Value
             }.Regex;
+
         private RegexSearcher NewSearcher()
         {
             return new RegexSearcher(fpSearchPath.FilePath, SearchDepth, FilenameRegex, ContentRegex,
@@ -77,6 +80,7 @@ namespace RegexFileSearcher
             cboSubdirectories.ResumeLayout();
             cboSubdirectories.Invalidate();
         }
+
         private void InitializeResultExplorer()
         {
             var openCell = new CustomCell
@@ -87,6 +91,7 @@ namespace RegexFileSearcher
                     Command = new Command((_, __) => HandleOpenItem(e.Item))
                 }
             };
+
             var columns = new[]
             {
                 new GridColumn { HeaderText = "Select",  DataCell = new CheckBoxCell(0), Editable = true },
@@ -94,6 +99,7 @@ namespace RegexFileSearcher
                 new GridColumn { HeaderText = "Matches", DataCell = new TextBoxCell(2) },
                 new GridColumn { HeaderText = "Path",    DataCell = new TextBoxCell(3) },
             };
+
             Array.ForEach(columns, tvwResultExplorer.Columns.Add);
             tvwResultExplorer.AllowMultipleSelection = false;
             tvwResultExplorer.DataStore = _itemCollection;
@@ -105,6 +111,7 @@ namespace RegexFileSearcher
             if (CheckEditor())
                 OpenInEditor((string)tgItem.GetValue(3));
         }
+
         private bool CheckEditor()
         {
             if (string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
@@ -120,6 +127,7 @@ namespace RegexFileSearcher
         {
             Process.Start(fpOpenWith.FilePath.Trim(), path);
         }
+
         private void HandleSearch(object sender, EventArgs e)
         {
             if (_searchEnded)
@@ -134,6 +142,7 @@ namespace RegexFileSearcher
                 EndSearch();
             }
         }
+
         private void StartSearch()
         {
             _searchEnded = false;
@@ -151,35 +160,35 @@ namespace RegexFileSearcher
             searcher.CurrentDirectoryChanged += UpdateStatusLabel;
 
             Task.Factory.StartNew(searcher.StartSearch,
-                _cancellationTokenSource.Token,
-                TaskCreationOptions.LongRunning,
-                TaskScheduler.Default);
+                                  _cancellationTokenSource.Token,
+                                  TaskCreationOptions.LongRunning,
+                                  TaskScheduler.Default);
 
             _updateTimer = new Timer(_ => UpdateResultExplorer(), null, 0, 1000);
         }
+
         private void EndSearch(bool isUserRequested = true)
         {
             _updateTimer?.Dispose();
             if (isUserRequested)
                 _cancellationTokenSource.Cancel();
 
+            UpdateResultExplorer();
+            UpdateStatusLabel("Search ended");
             Application.Instance.Invoke(() =>
             {
-                tvwResultExplorer.ReloadData();
-                if (_itemCollection.Count > 0)
-                {
-                    tvwResultExplorer.ScrollToRow(_itemCollection.Count - 1);
-                }
-                lblStatus.Text = "Search ended";
                 btnStartSearch.Text = "Start Search";
                 btnOrderByMatches.Enabled = true;
             });
+
             _searchEnded = true;
         }
+
         private void UpdateStatusLabel(string dir)
         {
             Application.Instance.Invoke(() => lblStatus.Text = dir);
         }
+
         private void UpdateResultExplorer()
         {
             Application.Instance.Invoke(() =>
@@ -270,10 +279,9 @@ namespace RegexFileSearcher
                 int b = (int)(otherItem as TreeGridItem)?.GetValue(2);
                 return a.CompareTo(b) * direction;
             }
+
             _itemCollection.Sort(CompareItems);
-
             _matchNumberOrdering = !_matchNumberOrdering;
-
             if (_itemCollection.Any())
             {
                 tvwResultExplorer.ScrollToRow(0);

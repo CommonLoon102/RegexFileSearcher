@@ -35,6 +35,7 @@ namespace RegexFileSearcher
             _cancellationToken = token;
             _searchEnded = false;
         }
+
         public string CurrentDirectory
         {
             get => _currentDirectory;
@@ -46,6 +47,7 @@ namespace RegexFileSearcher
                 OnCurrentDirectoryChanged();
             }
         }
+
         public event Action<bool> SearchEnded;
         public event Action<string> CurrentDirectoryChanged;
         public void StartSearch()
@@ -70,21 +72,27 @@ namespace RegexFileSearcher
                     MatchWith(MatchAll);
                     break;
             }
+
             OnSearchEnded();
         }
-        protected void OnCurrentDirectoryChanged() => CurrentDirectoryChanged?.Invoke(CurrentDirectory);
+
+        protected void OnCurrentDirectoryChanged()
+        {
+            CurrentDirectoryChanged?.Invoke(CurrentDirectory);
+        }
+
         protected void OnSearchEnded()
         {
             _searchEnded = true;
             SearchEnded?.Invoke(false);
         }
+
         private IEnumerable<IEnumerable<string>> EnumerateFiles(string dir, int currentDepth)
         {
             if (!_recurseSubdirectories && currentDepth < 0)
                 yield break;
 
             CurrentDirectory = dir;
-            OnCurrentDirectoryChanged();
             IEnumerable<string> files = null;
             try
             {
@@ -96,6 +104,7 @@ namespace RegexFileSearcher
             {
                 // IO exceptions e.g. directory was removed during enumeration
             }
+
             if (files == null)
             {
                 yield break;
@@ -110,6 +119,7 @@ namespace RegexFileSearcher
                     yield return subFiles;
             }
         }
+
         private void MatchWith(Action<string> matcher)
         {
             foreach (var files in EnumerateFiles(_searchDirectory, _depth))
@@ -130,16 +140,22 @@ namespace RegexFileSearcher
                 }
             }
         }
+
         private void MatchOnFilename(string fileName)
         {
-            fileName = Path.GetFileName(fileName);
             if (_cancellationToken.IsCancellationRequested)
                 return;
-            if (!_filenameRegex.IsMatch(fileName))
-                return;
 
-            Add(fileName);
+            if (IsMatchingFilename(fileName))
+                Add(fileName);
         }
+
+        private bool IsMatchingFilename(string fileName)
+        {
+            fileName = Path.GetFileName(fileName);
+            return _filenameRegex.IsMatch(fileName);
+        }
+
         private void MatchOnContent(string fileName)
         {
             // ReadToEnd any file below 50 MB
@@ -167,6 +183,7 @@ namespace RegexFileSearcher
                         count += _contentRegex.Matches(new string(buffer)).Count;
                     }
                 }
+
                 if (count > 0)
                     Add(fileName, count);
             }
@@ -175,15 +192,16 @@ namespace RegexFileSearcher
                 // Regex timeout or IO exceptions
             }
         }
+
         private void MatchAll(string fileName)
         {
             if (_cancellationToken.IsCancellationRequested)
                 return;
-            if (!_filenameRegex.IsMatch(Path.GetFileName(fileName)))
-                return;
 
-            MatchOnContent(fileName);
+            if (IsMatchingFilename(fileName))
+                MatchOnContent(fileName);
         }
+
         private void Add(string fileName, int count = 0)
         {
             lock (_itemCollection)
