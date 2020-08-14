@@ -175,7 +175,7 @@ namespace RegexFileSearcher
         {
             Application.Instance.Invoke(() =>
             {
-                lock (RegexSearcher.collectionLocker)
+                lock (ItemCollection)
                 {
                     tvwResultExplorer.ReloadData();
                     if (ItemCollection.Count > 0)
