@@ -124,7 +124,7 @@ namespace RegexFileSearcher
                     .WithDegreeOfParallelism(Math.Max(1, Environment.ProcessorCount - 1))
                     .ForAll(matcher);
                 }
-                catch
+                catch (OperationCanceledException)
                 {
                     // Operation cancelled by user
                 }
