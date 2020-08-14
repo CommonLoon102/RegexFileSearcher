@@ -274,7 +274,7 @@ namespace RegexFileSearcher
 
             _matchNumberOrdering = !_matchNumberOrdering;
 
-            if (_itemCollection.Count > 0)
+            if (_itemCollection.Any())
             {
                 tvwResultExplorer.ScrollToRow(0);
             }
