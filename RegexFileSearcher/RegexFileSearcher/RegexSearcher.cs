@@ -210,7 +210,7 @@ namespace RegexFileSearcher
                 {
                     // false: selected CheckBox @ column 0
                     // null:  custom cell for open LinkButton @ column 1
-                    _itemCollection.Add(new TreeGridItem(false, null, count, fileName));
+                    _itemCollection.Add(new SearchResultEntry { Matches = count, Path = fileName });
                 }
             }
         }

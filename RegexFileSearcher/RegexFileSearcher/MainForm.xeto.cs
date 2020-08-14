@@ -107,9 +107,9 @@ namespace RegexFileSearcher
 
         private void HandleOpenItem(object item)
         {
-            var tgItem = item as TreeGridItem;
+            var tgItem = item as SearchResultEntry;
             if (CheckEditor())
-                OpenInEditor((string)tgItem.GetValue(3));
+                OpenInEditor(tgItem.Path);
         }
 
         private bool CheckEditor()
@@ -216,9 +216,9 @@ namespace RegexFileSearcher
 
         private void SelectAll(bool value)
         {
-            foreach (TreeGridItem item in _itemCollection)
+            foreach (SearchResultEntry item in _itemCollection)
             {
-                item.SetValue(0, value);
+                item.IsSelected = value;
             }
 
             tvwResultExplorer.ReloadData();
@@ -226,9 +226,9 @@ namespace RegexFileSearcher
 
         private void HandleInvertSelection(object sender, EventArgs e)
         {
-            foreach (TreeGridItem item in _itemCollection)
+            foreach (SearchResultEntry item in _itemCollection)
             {
-                item.SetValue(0, !(bool)item.GetValue(0));
+                item.IsSelected = !item.IsSelected;
             }
 
             tvwResultExplorer.ReloadData();
@@ -240,12 +240,11 @@ namespace RegexFileSearcher
                 return;
 
             List<string> filesToOpen = new List<string>();
-            foreach (TreeGridItem item in _itemCollection)
+            foreach (SearchResultEntry item in _itemCollection)
             {
-                bool isSelected = (bool)item.GetValue(0);
-                if (isSelected)
+                if (item.IsSelected)
                 {
-                    filesToOpen.Add((string)item.GetValue(3));
+                    filesToOpen.Add(item.Path);
                 }
             }
 
@@ -275,8 +274,8 @@ namespace RegexFileSearcher
             int direction = _matchNumberOrdering ? 1 : -1;
             int CompareItems(ITreeGridItem item, ITreeGridItem otherItem)
             {
-                int a = (int)(item as TreeGridItem)?.GetValue(2);
-                int b = (int)(otherItem as TreeGridItem)?.GetValue(2);
+                int a = (item as SearchResultEntry)?.Matches ?? 0;
+                int b = (otherItem as SearchResultEntry)?.Matches ?? 0;
                 return a.CompareTo(b) * direction;
             }
 
@@ -290,7 +289,7 @@ namespace RegexFileSearcher
 
         private void HandleResultExplorerSelectedItemChanged(object sender, EventArgs e)
         {
-            txtPath.Text = (string)(tvwResultExplorer.SelectedItem as TreeGridItem)?.GetValue(3) ?? "";
+            txtPath.Text = (tvwResultExplorer.SelectedItem as SearchResultEntry)?.Path ?? "";
         }
     }
 }
