@@ -190,7 +190,7 @@ namespace RegexFileSearcher
         {
             // false: selected @ column 0
             // null:  custom cell for open link button @ column 1
-            lock (collectionLocker)
+            lock (ItemCollection)
             {
                 if (!_searchEnded)
                     ItemCollection.Add(new TreeGridItem(false, null, count, fileName));
