@@ -5,7 +5,6 @@ namespace RegexFileSearcher
 {
     partial class MainForm : Form
     {
-        #region Controls
         private readonly TextBox txtFilenameRegex;
         private readonly CheckBox chkCompiled;
         private readonly CheckBox chkCultureInvariant;
@@ -40,11 +39,9 @@ namespace RegexFileSearcher
         private readonly TreeGridView tvwResultExplorer;
         private readonly TextBox txtPath;
         private readonly Label lblStatus;
-        #endregion // Controls
         private MainForm(bool initializeControls)
         {
             XamlReader.Load(this);
-            #region Initialize Controls
             txtFilenameRegex = FindChild<TextBox>("txtFilenameRegex");
             chkCompiled = FindChild<CheckBox>("chkCompiled");
             chkCultureInvariant = FindChild<CheckBox>("chkCultureInvariant");
@@ -79,7 +76,6 @@ namespace RegexFileSearcher
             tvwResultExplorer = FindChild<TreeGridView>("tvwResultExplorer");
             txtPath = FindChild<TextBox>("txtPath");
             lblStatus = FindChild<Label>("lblStatus");
-            #endregion // Initialize Controls
         }
     }
 }
