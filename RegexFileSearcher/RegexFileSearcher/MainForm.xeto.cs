@@ -12,6 +12,7 @@ namespace RegexFileSearcher
     public partial class MainForm : Form
     {
         private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();
+
         private CancellationTokenSource _cancellationTokenSource;
         private Timer _updateTimer;
         private bool _matchNumberOrdering;
@@ -24,6 +25,7 @@ namespace RegexFileSearcher
         }
 
         private int SearchDepth => int.Parse(cboSubdirectories.SelectedKey);
+
         private Regex FilenameRegex =>
             string.IsNullOrEmpty(txtFilenameRegex.Text)
             ? null : new RegexPattern
@@ -58,10 +60,14 @@ namespace RegexFileSearcher
                 Timeout = (int)nudContentTimeout.Value
             }.Regex;
 
-        private RegexSearcher NewSearcher()
+        private RegexSearcher CreateNewSearcher()
         {
-            return new RegexSearcher(fpSearchPath.FilePath, SearchDepth, FilenameRegex, ContentRegex,
-                                     _itemCollection, _cancellationTokenSource.Token);
+            return new RegexSearcher(fpSearchPath.FilePath,
+                                     SearchDepth,
+                                     FilenameRegex,
+                                     ContentRegex,
+                                     _itemCollection,
+                                     _cancellationTokenSource.Token);
         }
 
         private void InitializeSubdirectoryPicker()
@@ -109,7 +115,9 @@ namespace RegexFileSearcher
         {
             var entry = item as SearchResultEntry;
             if (CheckEditor())
+            {
                 OpenInEditor(entry.Path);
+            }
         }
 
         private bool CheckEditor()
@@ -155,7 +163,7 @@ namespace RegexFileSearcher
             btnOrderByMatches.Enabled = false;
 
             _cancellationTokenSource = new CancellationTokenSource();
-            var searcher = NewSearcher();
+            var searcher = CreateNewSearcher();
             searcher.SearchEnded += EndSearch;
             searcher.CurrentDirectoryChanged += UpdateStatusLabel;
 
@@ -171,7 +179,9 @@ namespace RegexFileSearcher
         {
             _updateTimer?.Dispose();
             if (isUserRequested)
+            {
                 _cancellationTokenSource.Cancel();
+            }
 
             UpdateResultExplorer();
             UpdateStatusLabel("Search ended");
@@ -237,7 +247,9 @@ namespace RegexFileSearcher
         private void HandleOpenSelected(object sender, EventArgs e)
         {
             if (!CheckEditor())
+            {
                 return;
+            }
 
             List<string> filesToOpen = new List<string>();
             foreach (SearchResultEntry entry in _itemCollection)

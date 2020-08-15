@@ -11,18 +11,24 @@ namespace RegexFileSearcher
 {
     internal class RegexSearcher
     {
+        private static readonly EnumerationOptions options = new EnumerationOptions { IgnoreInaccessible = true };
+        private static volatile bool _searchEnded;
+
         private readonly int _depth;
         private readonly string _searchDirectory;
         private readonly bool _recurseSubdirectories;
-        private readonly Regex _filenameRegex, _contentRegex;
+        private readonly Regex _filenameRegex;
+        private readonly Regex _contentRegex;
         private readonly CancellationToken _cancellationToken;
         private readonly TreeGridItemCollection _itemCollection;
+
         private string _currentDirectory;
-        private static readonly EnumerationOptions options = new EnumerationOptions { IgnoreInaccessible = true };
-        private static volatile bool _searchEnded;
+
         // Waiting for init-only properties in C# 9
-        public RegexSearcher(string searchDir, int depth,
-                             Regex fileRegex, Regex contentRegex,
+        public RegexSearcher(string searchDir,
+                             int depth,
+                             Regex fileRegex,
+                             Regex contentRegex,
                              TreeGridItemCollection itemCollection,
                              CancellationToken token)
         {
@@ -41,18 +47,21 @@ namespace RegexFileSearcher
             get => _currentDirectory;
             set
             {
-                // No need to check against the current value,
-                // because a repeating directory path is not currently possible
-                _currentDirectory = value;
-                OnCurrentDirectoryChanged();
+                if (value != _currentDirectory)
+                {
+                    _currentDirectory = value;
+                    OnCurrentDirectoryChanged();
+                }
             }
         }
 
         public event Action<bool> SearchEnded;
         public event Action<string> CurrentDirectoryChanged;
+
         public void StartSearch()
         {
-            if (_searchDirectory?.Trim()?.Length == 0 || !Directory.Exists(_searchDirectory))
+            if (_searchDirectory?.Trim()?.Length == 0
+                || !Directory.Exists(_searchDirectory))
             {
                 OnSearchEnded();
                 return;
@@ -90,7 +99,9 @@ namespace RegexFileSearcher
         private IEnumerable<IEnumerable<string>> EnumerateFiles(string dir, int currentDepth)
         {
             if (!_recurseSubdirectories && currentDepth < 0)
+            {
                 yield break;
+            }
 
             CurrentDirectory = dir;
             IEnumerable<string> files = null;
@@ -111,11 +122,14 @@ namespace RegexFileSearcher
             }
 
             yield return files;
+
             // Any direcotry path exception has already been handled above
             foreach (var subDir in Directory.EnumerateDirectories(dir, "*", options))
             {
                 foreach (var subFiles in EnumerateFiles(subDir, currentDepth - 1))
+                {
                     yield return subFiles;
+                }
             }
         }
 
@@ -124,7 +138,9 @@ namespace RegexFileSearcher
             foreach (var files in EnumerateFiles(_searchDirectory, _depth))
             {
                 if (_cancellationToken.IsCancellationRequested)
+                {
                     return;
+                }
 
                 try
                 {
@@ -135,7 +151,9 @@ namespace RegexFileSearcher
                     .ForAll(fileName =>
                     {
                         if (_cancellationToken.IsCancellationRequested)
+                        {
                             return;
+                        }
 
                         matcher(fileName);
                     });
@@ -149,8 +167,10 @@ namespace RegexFileSearcher
 
         private void MatchOnFilename(string fileName)
         {
-            if (IsMatchingFilename(fileName))
+            if (IsFilenameMatches(fileName))
+            {
                 Add(fileName);
+            }
         }
 
         private void MatchOnContent(string fileName)
@@ -160,7 +180,9 @@ namespace RegexFileSearcher
                 using var fileReader = File.OpenText(fileName);
                 int count = _contentRegex.Matches(fileReader.ReadToEnd()).Count;
                 if (count > 0)
+                {
                     Add(fileName, count);
+                }
             }
             catch
             {
@@ -170,11 +192,13 @@ namespace RegexFileSearcher
 
         private void MatchAll(string fileName)
         {
-            if (IsMatchingFilename(fileName))
+            if (IsFilenameMatches(fileName))
+            {
                 MatchOnContent(fileName);
+            }
         }
 
-        private bool IsMatchingFilename(string fileName)
+        private bool IsFilenameMatches(string fileName)
         {
             fileName = Path.GetFileName(fileName);
             return _filenameRegex.IsMatch(fileName);
