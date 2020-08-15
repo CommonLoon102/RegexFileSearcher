@@ -8,7 +8,7 @@ Cross-platform regex file searching tool in .NET Core
  - Install the .NET Core Runtime
  - Start the app from the terminal with `dotnet RegexFileSearcher.Gtk.dll`
 ## Mac
- - Complete compiling steps below, which will create the file RegexFileSearcher/RegexFileSearcher/RegexFileSearcher.Mac/bin/Debug/netcoreapp3.1/RegexFileSearcher.Mac.app
+ - Complete compiling steps below, which will create the file `RegexFileSearcher/RegexFileSearcher/RegexFileSearcher.Mac/bin/Debug/netcoreapp3.1/RegexFileSearcher.Mac.app`
  - Start the app from the terminal with `open RegexFileSearch.Mac.app`
  - Start the app from Finder by double-clicking RegexFileSearch.Mac (the .app file extension will be hidden by default)
 # Compiling
