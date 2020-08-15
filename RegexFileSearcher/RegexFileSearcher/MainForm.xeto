@@ -41,18 +41,20 @@
               </StackLayout>
             </TableCell>
             <TableCell>
-              <StackLayout ToolTip="Stop search after specified milliseconds" Padding="20,1,1,1" Orientation="Horizontal">
-                <Label>Timeout</Label>
-                <Panel Padding="5,0,5,0">
-                  <NumericStepper ID="nudTimeout"
-                                  MinValue="1"
-                                  MaxValue="100000"
-                                  MaximumDecimalPlaces="0"
-                                  Value="2000"
-                                  Increment="1000"
-                                  Width="120"/>
-                </Panel>
-                <Label>ms</Label>
+              <StackLayout Orientation="Vertical">
+                <StackLayout  VerticalContentAlignment="Center" ToolTip="Stop search after specified seconds" Padding="20,1,1,1" Orientation="Horizontal">
+                  <Label>Timeout</Label>
+                  <Panel Padding="5,0,5,0">
+                    <NumericStepper ID="nudTimeout"
+                                    MinValue="1"
+                                    MaxValue="100"
+                                    MaximumDecimalPlaces="0"
+                                    Value="2"
+                                    Increment="1"
+                                    Width="90"/>
+                  </Panel>
+                  <Label>s</Label>
+                </StackLayout>
               </StackLayout>
             </TableCell>
           </TableRow>
@@ -91,18 +93,20 @@
               </StackLayout>
             </TableCell>
             <TableCell>
-              <StackLayout ToolTip="Stop search after specified milliseconds" Padding="20,1,1,1" Orientation="Horizontal">
-                <Label>Timeout</Label>
-                <Panel Padding="5,0,5,0">
-                  <NumericStepper ID="nudContentTimeout"
-                                  MinValue="1"
-                                  MaxValue="100000"
-                                  MaximumDecimalPlaces="0"
-                                  Value="2000"
-                                  Increment="1000"
-                                  Width="120"/>
-                </Panel>
-                <Label>ms</Label>
+              <StackLayout Orientation="Vertical">
+                <StackLayout  VerticalContentAlignment="Center" ToolTip="Stop search after specified seconds" Padding="20,1,1,1" Orientation="Horizontal">
+                  <Label>Timeout</Label>
+                  <Panel Padding="5,0,5,0">
+                    <NumericStepper ID="nudContentTimeout"
+                                    MinValue="1"
+                                    MaxValue="100"
+                                    MaximumDecimalPlaces="0"
+                                    Value="2"
+                                    Increment="1"
+                                    Width="90"/>
+                  </Panel>
+                  <Label>s</Label>
+                </StackLayout>
               </StackLayout>
             </TableCell>
           </TableRow>
