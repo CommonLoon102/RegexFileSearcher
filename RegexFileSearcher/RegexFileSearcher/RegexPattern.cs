@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace RegexFileSearcher
 {
-class RegexPattern
+    internal class RegexPattern
     {
         public string Pattern { get; set; }
-        public string ReplacementText { get; set; }
         public bool IsCompiled { get; set; }
         public bool IsIgnoreCase { get; set; }
         public bool IsMultiline { get; set; }
