@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace RegexFileSearcher
 {
@@ -17,11 +18,14 @@ namespace RegexFileSearcher
         private Timer _updateTimer;
         private bool _matchNumberOrdering;
         private volatile bool _searchEnded = true;
+        private ProcessStartInfo _defaultFileHandler;
+        private string _arguments = "";
 
         public MainForm() : this(initializeControls: true)
         {
             InitializeSubdirectoryPicker();
             InitializeResultExplorer();
+            InitializeDefaultFileHandler();
         }
 
         private int SearchDepth => int.Parse(cboSubdirectories.SelectedKey);
@@ -111,29 +115,50 @@ namespace RegexFileSearcher
             tvwResultExplorer.DataStore = _itemCollection;
         }
 
+        private void InitializeDefaultFileHandler()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                _defaultFileHandler = new ProcessStartInfo { FileName = "xdg-open" };
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _defaultFileHandler = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = _arguments = "/C start \"\" ",
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = true
+                };
+            }
+
+            // Needs testing. macOS is unsupported until then.
+            //if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            //   _defaultFileHandler = new ProcessStartInfo { FileName = "open" };  
+        }
+
         private void HandleOpenItem(object item)
         {
             var entry = item as SearchResultEntry;
-            if (CheckEditor())
-            {
-                OpenInEditor(entry.Path);
-            }
-        }
-
-        private bool CheckEditor()
-        {
-            if (string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
-            {
-                MessageBox.Show("No editor has been specified.", "Cannot open", MessageBoxType.Information);
-                return false;
-            }
-
-            return true;
+            OpenInEditor(entry.Path);
         }
 
         private void OpenInEditor(string path)
         {
-            Process.Start(fpOpenWith.FilePath.Trim(), path);
+            if (!string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
+            {
+                Process.Start(fpOpenWith.FilePath.Trim(), path);
+                return;
+            }
+
+            if (_defaultFileHandler == null)
+            {
+                MessageBox.Show("No editor has been specified.", "Cannot open", MessageBoxType.Information);
+                return;
+            }
+
+            _defaultFileHandler.Arguments += $"\"{path}\"";
+            Process.Start(_defaultFileHandler);
+            _defaultFileHandler.Arguments = _arguments;
         }
 
         private void HandleSearch(object sender, EventArgs e)
@@ -246,11 +271,6 @@ namespace RegexFileSearcher
 
         private void HandleOpenSelected(object sender, EventArgs e)
         {
-            if (!CheckEditor())
-            {
-                return;
-            }
-
             List<string> filesToOpen = new List<string>();
             foreach (SearchResultEntry entry in _itemCollection)
             {
