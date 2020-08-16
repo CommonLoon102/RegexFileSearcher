@@ -17,7 +17,7 @@ namespace RegexFileSearcher
         public bool IsCultureInvariant { get; set; }
         public int Timeout { get; set; }
 
-        public Regex Regex => new Regex(Pattern, RegexOptions, TimeSpan.FromMilliseconds(Timeout));
+        public Regex Regex => new Regex(Pattern, RegexOptions, TimeSpan.FromSeconds(Timeout));
 
         private RegexOptions RegexOptions
         {
