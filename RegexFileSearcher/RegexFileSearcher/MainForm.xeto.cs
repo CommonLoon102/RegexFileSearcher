@@ -131,9 +131,8 @@ namespace RegexFileSearcher
                 };
             }
 
-            // Needs testing. macOS is unsupported until then.
-            //if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            //   _defaultFileHandler = new ProcessStartInfo { FileName = "open" };  
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+               _defaultFileHandler = new ProcessStartInfo { FileName = "open" };  
         }
 
         private void HandleOpenItem(object item)
