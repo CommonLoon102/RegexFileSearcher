@@ -3,12 +3,12 @@ using System.Runtime.InteropServices;
 
 namespace RegexFileSearcher
 {
-    internal class FileHandler
+    internal static class FileHandler
     {
-        private readonly string _arguments = "";
-        private readonly ProcessStartInfo _defaultFileHandler;
+        private static readonly string _arguments = "";
+        private static readonly ProcessStartInfo _defaultFileHandler;
 
-        public FileHandler()
+        static FileHandler()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
@@ -33,7 +33,7 @@ namespace RegexFileSearcher
             }
         }
 
-        public void Open(string path)
+        public static void Open(string path)
         {
             if (_defaultFileHandler == null)
             {

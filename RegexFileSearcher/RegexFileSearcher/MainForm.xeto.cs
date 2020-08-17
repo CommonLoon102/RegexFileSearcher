@@ -11,8 +11,7 @@ namespace RegexFileSearcher
 {
     public partial class MainForm : Form
     {
-        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();
-        private readonly FileHandler _fileHandler = new FileHandler();
+        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();        
 
         private CancellationTokenSource _cancellationTokenSource;
         private Timer _updateTimer;
@@ -128,7 +127,7 @@ namespace RegexFileSearcher
 
             try
             {
-                _fileHandler.Open(path);
+                FileHandler.Open(path);
             }
             catch (FileHandlerException ex)
             {
