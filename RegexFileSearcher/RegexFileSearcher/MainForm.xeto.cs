@@ -1,17 +1,17 @@
+using Eto.Forms;
 using System;
 using System.Collections.Generic;
-using Eto.Forms;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RegexFileSearcher
 {
     public partial class MainForm : Form
     {
-        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();
+        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();        
 
         private CancellationTokenSource _cancellationTokenSource;
         private Timer _updateTimer;
@@ -114,26 +114,25 @@ namespace RegexFileSearcher
         private void HandleOpenItem(object item)
         {
             var entry = item as SearchResultEntry;
-            if (CheckEditor())
-            {
-                OpenInEditor(entry.Path);
-            }
-        }
-
-        private bool CheckEditor()
-        {
-            if (string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
-            {
-                MessageBox.Show("No editor has been specified.", "Cannot open", MessageBoxType.Information);
-                return false;
-            }
-
-            return true;
+            OpenInEditor(entry.Path);
         }
 
         private void OpenInEditor(string path)
         {
-            Process.Start(fpOpenWith.FilePath.Trim(), path);
+            if (!string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
+            {
+                Process.Start(fpOpenWith.FilePath.Trim(), path);
+                return;
+            }
+
+            try
+            {
+                FileHandler.Open(path);
+            }
+            catch (FileHandlerException ex)
+            {
+                MessageBox.Show(ex.Message, "Cannot open", MessageBoxType.Information);
+            }
         }
 
         private void HandleSearch(object sender, EventArgs e)
@@ -246,11 +245,6 @@ namespace RegexFileSearcher
 
         private void HandleOpenSelected(object sender, EventArgs e)
         {
-            if (!CheckEditor())
-            {
-                return;
-            }
-
             List<string> filesToOpen = new List<string>();
             foreach (SearchResultEntry entry in _itemCollection)
             {
