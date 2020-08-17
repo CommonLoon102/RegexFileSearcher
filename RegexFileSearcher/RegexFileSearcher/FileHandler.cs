@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace RegexFileSearcher
 {
-    class FileHandler
+    internal class FileHandler
     {
         private readonly string _arguments = "";
         private readonly ProcessStartInfo _defaultFileHandler;
