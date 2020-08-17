@@ -1,31 +1,28 @@
+using Eto.Forms;
 using System;
 using System.Collections.Generic;
-using Eto.Forms;
 using System.Diagnostics;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace RegexFileSearcher
 {
     public partial class MainForm : Form
     {
         private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();
+        private readonly FileHandler _fileHandler = new FileHandler();
 
         private CancellationTokenSource _cancellationTokenSource;
         private Timer _updateTimer;
         private bool _matchNumberOrdering;
         private volatile bool _searchEnded = true;
-        private ProcessStartInfo _defaultFileHandler;
-        private string _arguments = "";
 
         public MainForm() : this(initializeControls: true)
         {
             InitializeSubdirectoryPicker();
             InitializeResultExplorer();
-            InitializeDefaultFileHandler();
         }
 
         private int SearchDepth => int.Parse(cboSubdirectories.SelectedKey);
@@ -115,26 +112,6 @@ namespace RegexFileSearcher
             tvwResultExplorer.DataStore = _itemCollection;
         }
 
-        private void InitializeDefaultFileHandler()
-        {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                _defaultFileHandler = new ProcessStartInfo { FileName = "xdg-open" };
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                _defaultFileHandler = new ProcessStartInfo
-                {
-                    FileName = "cmd.exe",
-                    Arguments = _arguments = "/C start \"\" ",
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                    CreateNoWindow = true
-                };
-            }
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-               _defaultFileHandler = new ProcessStartInfo { FileName = "open" };  
-        }
-
         private void HandleOpenItem(object item)
         {
             var entry = item as SearchResultEntry;
@@ -149,15 +126,14 @@ namespace RegexFileSearcher
                 return;
             }
 
-            if (_defaultFileHandler == null)
+            try
             {
-                MessageBox.Show("No editor has been specified.", "Cannot open", MessageBoxType.Information);
-                return;
+                _fileHandler.Open(path);
             }
-
-            _defaultFileHandler.Arguments += $"\"{path}\"";
-            Process.Start(_defaultFileHandler);
-            _defaultFileHandler.Arguments = _arguments;
+            catch (FileHandlerException ex)
+            {
+                MessageBox.Show(ex.Message, "Cannot open", MessageBoxType.Information);
+            }
         }
 
         private void HandleSearch(object sender, EventArgs e)
