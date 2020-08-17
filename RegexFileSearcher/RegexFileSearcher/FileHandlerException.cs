@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.Serialization;
 
 namespace RegexFileSearcher
 {
@@ -11,7 +10,7 @@ namespace RegexFileSearcher
         public FileHandlerException(string message) : base(message) { }
         public FileHandlerException(string message, Exception inner) : base(message, inner) { }
         protected FileHandlerException(
-          System.Runtime.Serialization.SerializationInfo info,
-          System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+          SerializationInfo info,
+          StreamingContext context) : base(info, context) { }
     }
 }
