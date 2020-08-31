@@ -11,7 +11,7 @@ namespace RegexFileSearcher
 {
     internal class RegexSearcher
     {
-        private static readonly EnumerationOptions options = new EnumerationOptions { IgnoreInaccessible = true };
+        private static readonly EnumerationOptions _options = new EnumerationOptions { IgnoreInaccessible = true };
         private static volatile bool _searchEnded;
 
         private readonly int _depth;
@@ -109,7 +109,7 @@ namespace RegexFileSearcher
             {
                 // Although   IgnoreInaccessible  is  true  by  default,
                 // it only applies when you use the 3 parameter overload
-                files = Directory.EnumerateFiles(dir, "*", options);
+                files = Directory.EnumerateFiles(dir, "*", _options);
             }
             catch
             {
@@ -124,7 +124,7 @@ namespace RegexFileSearcher
             yield return files;
 
             // Any direcotry path exception has already been handled above
-            foreach (var subDir in Directory.EnumerateDirectories(dir, "*", options))
+            foreach (var subDir in Directory.EnumerateDirectories(dir, "*", _options))
             {
                 foreach (var subFiles in EnumerateFiles(subDir, currentDepth - 1))
                 {

@@ -94,7 +94,7 @@ namespace RegexFileSearcher
                 CreateCell = e => new LinkButton
                 {
                     Text = "Open",
-                    Command = new Command((_, __) => HandleOpenItem(e.Item))
+                    Command = new Command((o, ea) => HandleOpenItem(e.Item))
                 }
             };
 
