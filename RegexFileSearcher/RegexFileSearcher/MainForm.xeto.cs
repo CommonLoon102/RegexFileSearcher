@@ -114,7 +114,7 @@ namespace RegexFileSearcher
         private void HandleOpenItem(object item)
         {
             var entry = item as SearchResultEntry;
-            OpenInEditor(entry.Path);
+            OpenInEditor(entry.FilePath.Path);
         }
 
         private void OpenInEditor(string path)
@@ -250,7 +250,7 @@ namespace RegexFileSearcher
             {
                 if (entry.IsSelected)
                 {
-                    filesToOpen.Add(entry.Path);
+                    filesToOpen.Add(entry.FilePath.Path);
                 }
             }
 
@@ -295,7 +295,7 @@ namespace RegexFileSearcher
 
         private void HandleResultExplorerSelectedItemChanged(object sender, EventArgs e)
         {
-            txtPath.Text = (tvwResultExplorer.SelectedItem as SearchResultEntry)?.Path ?? "";
+            txtPath.Text = (tvwResultExplorer.SelectedItem as SearchResultEntry)?.FilePath.Path ?? "";
         }
     }
 }

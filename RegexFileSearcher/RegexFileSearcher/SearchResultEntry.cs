@@ -14,7 +14,7 @@ namespace RegexFileSearcher
             base.Values = new object[numberOfColumns];
             IsSelected = false;
             Matches = 0;
-            Path = "";
+            FilePath = new FilePath(null);
         }
 
         public bool IsSelected
@@ -29,9 +29,9 @@ namespace RegexFileSearcher
             set => Values[matchesColumnNumber] = value;
         }
 
-        public string Path
+        public FilePath FilePath
         {
-            get => (string)Values[pathColumnNumber];
+            get => (FilePath)Values[pathColumnNumber];
             set => Values[pathColumnNumber] = value;
         }
     }
