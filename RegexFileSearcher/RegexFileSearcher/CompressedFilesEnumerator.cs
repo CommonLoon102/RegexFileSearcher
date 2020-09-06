@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Linq;
 
 namespace RegexFileSearcher
 {
@@ -49,12 +50,9 @@ namespace RegexFileSearcher
                 FilePath compressedFilePath = new FilePath(zip.FullName);
                 if (IsZipFile(compressedFilePath))
                 {
-                    foreach (IEnumerable<FilePath> compressedZipFiles in GetCompressedFiles(compressedFilePath, zip.Open()))
+                    foreach (FilePath compressedZipFile in GetCompressedFiles(compressedFilePath, zip.Open()).SelectMany(f => f))
                     {
-                        foreach (FilePath compressedZipFile in compressedZipFiles)
-                        {
-                            yield return compressedZipFile;
-                        }
+                        yield return compressedZipFile;
                     }
                 }
                 else
