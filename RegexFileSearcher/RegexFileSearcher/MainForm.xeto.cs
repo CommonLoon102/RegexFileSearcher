@@ -2,6 +2,7 @@ using Eto.Forms;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -11,7 +12,7 @@ namespace RegexFileSearcher
 {
     public partial class MainForm : Form
     {
-        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();        
+        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();
 
         private CancellationTokenSource _cancellationTokenSource;
         private Timer _updateTimer;
@@ -114,25 +115,37 @@ namespace RegexFileSearcher
         private void HandleOpenItem(object item)
         {
             var entry = item as SearchResultEntry;
-            OpenInEditor(entry.FilePath.Path);
+            OpenInEditor(entry.FilePath);
         }
 
-        private void OpenInEditor(string path)
+        private void OpenInEditor(FilePath path)
         {
+            string pathToOpen = path.CompressedFile == null ? path.Path : GetTempPath(path);
+
             if (!string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
             {
-                Process.Start(fpOpenWith.FilePath.Trim(), path);
-                return;
+                Process.Start(fpOpenWith.FilePath.Trim(), pathToOpen);
             }
+            else
+            {
+                try
+                {
+                    FileHandler.Open(pathToOpen);
+                }
+                catch (FileHandlerException ex)
+                {
+                    MessageBox.Show(ex.Message, "Cannot open", MessageBoxType.Information);
+                }
+            }
+        }
 
-            try
-            {
-                FileHandler.Open(path);
-            }
-            catch (FileHandlerException ex)
-            {
-                MessageBox.Show(ex.Message, "Cannot open", MessageBoxType.Information);
-            }
+        private string GetTempPath(FilePath path)
+        {
+            string tempFileName = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
+            tempFileName += Path.GetExtension(path.GetInmostFilePath());
+            string tempPath = Path.Combine(Path.GetTempPath(), tempFileName);
+            File.WriteAllText(tempPath, path.GetFileContent());
+            return tempPath;
         }
 
         private void HandleSearch(object sender, EventArgs e)
@@ -245,12 +258,12 @@ namespace RegexFileSearcher
 
         private void HandleOpenSelected(object sender, EventArgs e)
         {
-            List<string> filesToOpen = new List<string>();
+            List<FilePath> filesToOpen = new List<FilePath>();
             foreach (SearchResultEntry entry in _itemCollection)
             {
                 if (entry.IsSelected)
                 {
-                    filesToOpen.Add(entry.FilePath.Path);
+                    filesToOpen.Add(entry.FilePath);
                 }
             }
 
@@ -267,7 +280,7 @@ namespace RegexFileSearcher
                 }
             }
 
-            foreach (string path in filesToOpen)
+            foreach (FilePath path in filesToOpen)
             {
                 OpenInEditor(path);
             }

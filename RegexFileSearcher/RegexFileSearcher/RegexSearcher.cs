@@ -17,7 +17,7 @@ namespace RegexFileSearcher
         private readonly int _depth;
         private readonly string _searchDirectory;
         private readonly bool _recurseSubdirectories;
-        private readonly bool _searchInCompressedFiles;
+        private readonly bool _searchInCompressedFiles = true;
         private readonly Regex _filenameRegex;
         private readonly Regex _contentRegex;
         private readonly CancellationToken _cancellationToken;
@@ -124,7 +124,7 @@ namespace RegexFileSearcher
 
             yield return filePaths;
 
-            if (!_searchInCompressedFiles)
+            if (_searchInCompressedFiles)
             {
                 foreach (IEnumerable<FilePath> compressedFilePaths in CompressedFilesEnumerator.GetCompressedFiles(filePaths))
                 {
@@ -186,8 +186,8 @@ namespace RegexFileSearcher
         {
             try
             {
-                using var fileReader = File.OpenText(filePath.Path);
-                int count = _contentRegex.Matches(fileReader.ReadToEnd()).Count;
+                string fileContent = filePath.GetFileContent();
+                int count = _contentRegex.Matches(fileContent).Count;
                 if (count > 0)
                 {
                     Add(filePath, count);
@@ -209,7 +209,7 @@ namespace RegexFileSearcher
 
         private bool IsFileNameMatches(FilePath filePath)
         {
-            string fileName = Path.GetFileName(filePath.Path);
+            string fileName = Path.GetFileName(filePath.GetInmostFilePath());
             return _filenameRegex.IsMatch(fileName);
         }
 

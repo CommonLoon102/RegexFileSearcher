@@ -6,6 +6,7 @@ using System.Text;
 
 namespace RegexFileSearcher
 {
+    // TODO: make it a real enumerator and add error handling
     public static class CompressedFilesEnumerator
     {
         public static IEnumerable<IEnumerable<FilePath>> GetCompressedFiles(IEnumerable<FilePath> filePaths)
@@ -21,12 +22,23 @@ namespace RegexFileSearcher
 
         private static IEnumerable<FilePath> GetCompressedFiles(FilePath filePath)
         {
-            using FileStream zipToOpen = new FileStream(filePath.Path, FileMode.Open);
-            using ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Read);
-            foreach (FilePath compressedFilePath in GetCompressedFilesInner(filePath, archive.Entries))
+            List<FilePath> result = new List<FilePath>();
+            try
             {
-                yield return compressedFilePath;
+                using FileStream zipToOpen = new FileStream(filePath.Path, FileMode.Open);
+                using ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Read);
+                foreach (FilePath compressedFilePath in GetCompressedFilesInner(filePath, archive.Entries))
+                {
+                    result.Add(compressedFilePath);
+                    //yield return compressedFilePath;
+                }
             }
+            catch
+            {
+            }
+
+            foreach (var r in result)
+                yield return r;
         }
 
         private static IEnumerable<FilePath> GetCompressedFilesInner(FilePath filePath,
@@ -37,9 +49,12 @@ namespace RegexFileSearcher
                 FilePath compressedFilePath = new FilePath(zip.FullName);
                 if (IsZipFile(compressedFilePath))
                 {
-                    foreach (FilePath compressedZipFile in GetCompressedFiles(compressedFilePath, zip.Open()))
+                    foreach (IEnumerable<FilePath> compressedZipFiles in GetCompressedFiles(compressedFilePath, zip.Open()))
                     {
-                        yield return compressedZipFile;
+                        foreach (FilePath compressedZipFile in compressedZipFiles)
+                        {
+                            yield return compressedZipFile;
+                        }
                     }
                 }
                 else
