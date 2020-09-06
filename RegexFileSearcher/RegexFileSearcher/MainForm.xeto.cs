@@ -287,6 +287,7 @@ namespace RegexFileSearcher
 
             _itemCollection.Sort(CompareItems);
             _matchNumberOrdering = !_matchNumberOrdering;
+            tvwResultExplorer.ReloadData();
             if (_itemCollection.Any())
             {
                 tvwResultExplorer.ScrollToRow(0);
