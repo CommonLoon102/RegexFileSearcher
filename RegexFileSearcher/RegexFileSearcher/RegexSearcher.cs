@@ -124,20 +124,20 @@ namespace RegexFileSearcher
 
             yield return filePaths;
 
-            if (_searchInCompressedFiles)
-            {
-                foreach (IEnumerable<FilePath> compressedFilePaths in CompressedFilesEnumerator.GetCompressedFiles(filePaths))
-                {
-                    yield return compressedFilePaths;
-                }
-            }
-
             // Any direcotry path exception has already been handled above
             foreach (var subDir in Directory.EnumerateDirectories(dir, "*", _options))
             {
                 foreach (var subFiles in EnumerateFiles(subDir, currentDepth - 1))
                 {
                     yield return subFiles;
+                }
+            }
+
+            if (_searchInCompressedFiles)
+            {
+                foreach (FilePath filePath in filePaths)
+                {
+                    yield return CompressedFileWalker.GetCompressedFiles(filePath);
                 }
             }
         }
