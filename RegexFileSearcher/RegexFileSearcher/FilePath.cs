@@ -8,9 +8,9 @@ namespace RegexFileSearcher
 {
     public class FilePath : IConvertible
     {
-        public FilePath CompressedFile { get; }
+        public FilePath CompressedFile { get; set; }
 
-        public string Path { get; }
+        public string Path { get; set; }
 
         public FilePath(string path)
         {
@@ -41,10 +41,8 @@ namespace RegexFileSearcher
                 return File.OpenText(Path).ReadToEnd();
             }
 
-            using (ZipArchive archive = ZipFile.Open(Path, ZipArchiveMode.Read))
-            {
-                return GetFileContent(archive, CompressedFile);
-            }
+            using ZipArchive archive = ZipFile.Open(Path, ZipArchiveMode.Read);
+            return GetFileContent(archive, CompressedFile);
         }
 
         private string GetFileContent(ZipArchive archive, FilePath compressedFile)

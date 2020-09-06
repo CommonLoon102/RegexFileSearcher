@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Text;
 using System.Linq;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace RegexFileSearcher
 {
@@ -12,46 +12,46 @@ namespace RegexFileSearcher
         public static IEnumerable<FilePath> GetCompressedFiles(FilePath filePath)
         {
             List<FilePath> results = new List<FilePath>();
-            if (!IsZipFile(filePath))
+            if (!IsCompressedFile(filePath.Path))
             {
                 return results;
             }
 
             try
             {
-                using FileStream zipToOpen = new FileStream(filePath.Path, FileMode.Open);
-                using ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Read);
-                results.AddRange(GetCompressedFilesInner(filePath, archive.Entries));
+                using var zipStream = File.OpenRead(filePath.Path);
+                results.AddRange(GetCompressedFilesInner(filePath, zipStream));
             }
             catch
             {
-                // Any zip file related exception
+                // File.OpenRead() related exceptions
             }
 
             return results;
         }
 
-        private static IEnumerable<FilePath> GetCompressedFilesInner(FilePath filePath,
-            IEnumerable<ZipArchiveEntry> archiveEntries)
+        private static IEnumerable<FilePath> GetCompressedFilesInner(FilePath filePath, Stream zipStream)
         {
-            foreach (ZipArchiveEntry archiveEntry in archiveEntries)
+            using var zipFile = new ZipFile(zipStream, leaveOpen: true);
+            foreach (ZipEntry zipEntry in GetZipEntries(zipFile))
             {
-                FilePath compressedFilePath = new FilePath(archiveEntry.FullName);
-                if (IsZipFile(compressedFilePath))
+                string zipEntryName = zipEntry.Name;
+                filePath.CompressedFile = new FilePath(zipEntryName);
+                if (IsCompressedFile(zipEntryName))
                 {
                     Stream entryStream = null;
                     try
                     {
-                        entryStream = archiveEntry.Open();
+                        entryStream = zipFile.GetInputStream(zipEntry);
                     }
                     catch
                     {
-                        // ZipArchiveEntry.Open() related issues
+                        // zipFile.GetInputStream() related exceptions
                     }
 
                     if (entryStream != null)
                     {
-                        foreach (FilePath compressedFile in GetCompressedFiles(compressedFilePath, entryStream))
+                        foreach (FilePath compressedFile in GetCompressedFilesInner(filePath.CompressedFile, entryStream))
                         {
                             yield return compressedFile;
                         }
@@ -59,31 +59,25 @@ namespace RegexFileSearcher
                 }
                 else
                 {
-                    yield return new FilePath(filePath.Path, compressedFilePath);
+                    yield return filePath;
                 }
             }
         }
 
-        private static IEnumerable<FilePath> GetCompressedFiles(FilePath compressedFilePath,
-            Stream compressedZipFile)
+        private static IEnumerable<ZipEntry> GetZipEntries(ZipFile zipFile)
         {
-            List<FilePath> results = new List<FilePath>();
-            try
+            foreach (ZipEntry zipEntry in zipFile)
             {
-                using ZipArchive archive = new ZipArchive(compressedZipFile, ZipArchiveMode.Read);
-                results.AddRange(GetCompressedFilesInner(compressedFilePath, archive.Entries));
+                if (zipEntry.IsFile)
+                {
+                    yield return zipEntry;
+                }
             }
-            catch
-            {
-                // new ZipArchive() related issues
-            }
-
-            return results;
         }
 
-        private static bool IsZipFile(FilePath filePath)
+        private static bool IsCompressedFile(string fileName)
         {
-            string extension = Path.GetExtension(filePath.Path).ToLower();
+            string extension = Path.GetExtension(fileName).ToLower();
             return extension == ".zip" || extension == ".gz";
         }
     }
