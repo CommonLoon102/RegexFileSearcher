@@ -120,7 +120,7 @@ namespace RegexFileSearcher
 
         private void OpenInEditor(FilePath path)
         {
-            string pathToOpen = path.CompressedFile == null ? path.Path : GetTempPath(path);
+            string pathToOpen = path.Parent == null ? path.Path : GetTempPath(path);
 
             if (!string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
             {

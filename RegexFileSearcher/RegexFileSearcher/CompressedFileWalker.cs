@@ -36,7 +36,6 @@ namespace RegexFileSearcher
             foreach (ZipEntry zipEntry in GetZipEntries(zipFile))
             {
                 string zipEntryName = zipEntry.Name;
-                filePath.CompressedFile = new FilePath(zipEntryName);
                 if (IsCompressedFile(zipEntryName))
                 {
                     Stream entryStream = null;
@@ -51,7 +50,8 @@ namespace RegexFileSearcher
 
                     if (entryStream != null)
                     {
-                        foreach (FilePath compressedFile in GetCompressedFilesInner(filePath.CompressedFile, entryStream))
+                        var innerFilePath = new FilePath(zipEntryName, filePath);
+                        foreach (FilePath compressedFile in GetCompressedFilesInner(innerFilePath, entryStream))
                         {
                             yield return compressedFile;
                         }
@@ -59,7 +59,7 @@ namespace RegexFileSearcher
                 }
                 else
                 {
-                    yield return filePath;
+                    yield return new FilePath(zipEntryName, filePath);
                 }
             }
         }

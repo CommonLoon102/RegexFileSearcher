@@ -8,9 +8,9 @@ namespace RegexFileSearcher
 {
     public class FilePath : IConvertible
     {
-        public FilePath CompressedFile { get; set; }
+        public FilePath Parent { get; private set; }
 
-        public string Path { get; set; }
+        public string Path { get; private set; }
 
         public FilePath(string path)
         {
@@ -20,15 +20,15 @@ namespace RegexFileSearcher
         public FilePath(string path, FilePath zipFile)
             : this(path)
         {
-            CompressedFile = zipFile;
+            Parent = zipFile;
         }
 
         public string GetInmostFilePath()
         {
             FilePath filePath = this;
-            while (filePath.CompressedFile != null)
+            while (filePath.Parent != null)
             {
-                filePath = filePath.CompressedFile;
+                filePath = filePath.Parent;
             }
 
             return filePath.Path;
@@ -36,19 +36,19 @@ namespace RegexFileSearcher
 
         public string GetFileContent()
         {
-            if (CompressedFile == null)
+            if (Parent == null)
             {
                 return File.OpenText(Path).ReadToEnd();
             }
 
             using ZipArchive archive = ZipFile.Open(Path, ZipArchiveMode.Read);
-            return GetFileContent(archive, CompressedFile);
+            return GetFileContent(archive, Parent);
         }
 
         private string GetFileContent(ZipArchive archive, FilePath compressedFile)
         {
             using Stream stream = archive.GetEntry(compressedFile.Path).Open();
-            if (compressedFile.CompressedFile == null)
+            if (compressedFile.Parent == null)
             {
                 TextReader tr = new StreamReader(stream);
                 return tr.ReadToEnd();
@@ -57,20 +57,20 @@ namespace RegexFileSearcher
             {
                 using ZipArchive subArchive = new ZipArchive(stream, ZipArchiveMode.Read);
                 {
-                    return GetFileContent(subArchive, compressedFile.CompressedFile);
+                    return GetFileContent(subArchive, compressedFile.Parent);
                 }
             }
         }
 
         private static string GetFullPath(FilePath filePath)
         {
-            if (filePath.CompressedFile == null)
+            if (filePath.Parent == null)
             {
                 return filePath.Path;
             }
             else
             {
-                return System.IO.Path.Combine(filePath.Path, GetFullPath(filePath.CompressedFile));
+                return System.IO.Path.Combine(filePath.Path, GetFullPath(filePath.Parent));
             }
         }
 
