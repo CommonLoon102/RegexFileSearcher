@@ -209,7 +209,7 @@ namespace RegexFileSearcher
 
         private bool IsFileNameMatches(FilePath filePath)
         {
-            string fileName = Path.GetFileName(filePath.GetInmostFilePath());
+            string fileName = Path.GetFileName(filePath.Path);
             return _filenameRegex.IsMatch(fileName);
         }
 

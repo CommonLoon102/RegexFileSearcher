@@ -17,21 +17,10 @@ namespace RegexFileSearcher
             Path = path;
         }
 
-        public FilePath(string path, FilePath zipFile)
+        public FilePath(string path, FilePath parent)
             : this(path)
         {
-            Parent = zipFile;
-        }
-
-        public string GetInmostFilePath()
-        {
-            FilePath filePath = this;
-            while (filePath.Parent != null)
-            {
-                filePath = filePath.Parent;
-            }
-
-            return filePath.Path;
+            Parent = parent;
         }
 
         public string GetFileContent()
@@ -70,7 +59,7 @@ namespace RegexFileSearcher
             }
             else
             {
-                return System.IO.Path.Combine(filePath.Path, GetFullPath(filePath.Parent));
+                return System.IO.Path.Combine(GetFullPath(filePath.Parent), filePath.Path);
             }
         }
 

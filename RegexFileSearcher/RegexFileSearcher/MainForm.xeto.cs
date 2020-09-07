@@ -142,7 +142,7 @@ namespace RegexFileSearcher
         private string GetTempPath(FilePath path)
         {
             string tempFileName = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
-            tempFileName += Path.GetExtension(path.GetInmostFilePath());
+            tempFileName += Path.GetExtension(path.Path);
             string tempPath = Path.Combine(Path.GetTempPath(), tempFileName);
             File.WriteAllText(tempPath, path.GetFileContent());
             return tempPath;

@@ -30,7 +30,7 @@ namespace RegexFileSearcher
             return results;
         }
 
-        private static IEnumerable<FilePath> GetCompressedFilesInner(FilePath filePath, Stream zipStream)
+        private static IEnumerable<FilePath> GetCompressedFilesInner(FilePath parentFilePath, Stream zipStream)
         {
             using var zipFile = new ZipFile(zipStream, leaveOpen: true);
             foreach (ZipEntry zipEntry in GetZipEntries(zipFile))
@@ -50,8 +50,8 @@ namespace RegexFileSearcher
 
                     if (entryStream != null)
                     {
-                        var innerFilePath = new FilePath(zipEntryName, filePath);
-                        foreach (FilePath compressedFile in GetCompressedFilesInner(innerFilePath, entryStream))
+                        var filePath = new FilePath(zipEntryName, parentFilePath);
+                        foreach (FilePath compressedFile in GetCompressedFilesInner(filePath, entryStream))
                         {
                             yield return compressedFile;
                         }
@@ -59,7 +59,7 @@ namespace RegexFileSearcher
                 }
                 else
                 {
-                    yield return new FilePath(zipEntryName, filePath);
+                    yield return new FilePath(zipEntryName, parentFilePath);
                 }
             }
         }
