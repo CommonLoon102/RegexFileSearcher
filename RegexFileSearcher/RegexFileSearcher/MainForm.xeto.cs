@@ -139,7 +139,22 @@ namespace RegexFileSearcher
         {
             if (_searchEnded)
             {
-                StartSearch();
+                try
+                {
+                    StartSearch();
+                }
+                catch(ArgumentException ex)
+                {
+                    if (ex.Source.Equals("System.Text.RegularExpressions"))
+                    {
+                        txtRegexError.Text = ex.Message;
+                        EndSearch();
+                    }
+                    else
+                    {
+                        throw ex;
+                    }
+                }
                 return;
             }
 
@@ -152,6 +167,8 @@ namespace RegexFileSearcher
 
         private void StartSearch()
         {
+            txtRegexError.Text = "";
+            
             _searchEnded = false;
             _itemCollection.Clear();
             tvwResultExplorer.ReloadData();
