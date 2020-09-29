@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Text;
 
 namespace RegexFileSearcher
 {
@@ -30,14 +29,40 @@ namespace RegexFileSearcher
                 return File.OpenText(Path).ReadToEnd();
             }
 
-            using ZipArchive archive = ZipFile.Open(Path, ZipArchiveMode.Read);
-            return GetFileContent(archive, Parent);
+            FilePath reversedFilePath = GetReversedFilePath(this);
+            string rootZipPath = reversedFilePath.Path;
+            using ZipArchive archive = ZipFile.Open(rootZipPath, ZipArchiveMode.Read);
+            return GetFileContent(archive, reversedFilePath.Parent);
         }
 
-        private string GetFileContent(ZipArchive archive, FilePath compressedFile)
+        private FilePath GetReversedFilePath(FilePath filePath)
         {
-            using Stream stream = archive.GetEntry(compressedFile.Path).Open();
-            if (compressedFile.Parent == null)
+            List<string> pathList = new List<string>();
+            while (filePath != null)
+            {
+                pathList.Add(filePath.Path);
+                filePath = filePath.Parent;
+            }
+
+            pathList.Reverse();
+            List<FilePath> filePaths = new List<FilePath>(pathList.Count);
+            for (int i = 0; i < pathList.Count; i++)
+            {
+                filePaths.Add(new FilePath(pathList[i]));
+            }
+
+            for (int i = 0; i < pathList.Count - 1; i++)
+            {
+                filePaths[i].Parent = filePaths[i + 1];
+            }
+
+            return filePaths[0];
+        }
+
+        private string GetFileContent(ZipArchive archive, FilePath parent)
+        {
+            using Stream stream = archive.GetEntry(parent.Path).Open();
+            if (parent.Parent == null)
             {
                 TextReader tr = new StreamReader(stream);
                 return tr.ReadToEnd();
@@ -46,22 +71,15 @@ namespace RegexFileSearcher
             {
                 using ZipArchive subArchive = new ZipArchive(stream, ZipArchiveMode.Read);
                 {
-                    return GetFileContent(subArchive, compressedFile.Parent);
+                    return GetFileContent(subArchive, parent.Parent);
                 }
             }
         }
 
         private static string GetFullPath(FilePath filePath)
-        {
-            if (filePath.Parent == null)
-            {
-                return filePath.Path;
-            }
-            else
-            {
-                return System.IO.Path.Combine(GetFullPath(filePath.Parent), filePath.Path);
-            }
-        }
+            => filePath.Parent == null ?
+                filePath.Path
+                : System.IO.Path.Combine(GetFullPath(filePath.Parent), filePath.Path);
 
         #region IConvertible members
         public TypeCode GetTypeCode()
