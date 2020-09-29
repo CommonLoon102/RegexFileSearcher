@@ -32,7 +32,7 @@ namespace RegexFileSearcher
             FilePath reversedFilePath = GetReversedFilePath(this);
             string rootZipPath = reversedFilePath.Path;
             using var zipStream = File.OpenRead(rootZipPath);
-            using var archive = new ZipFile(zipStream, leaveOpen: true);
+            using var archive = new ZipFile(zipStream, leaveOpen: false);
             return GetFileContent(archive, reversedFilePath.Parent);
         }
 
@@ -70,7 +70,7 @@ namespace RegexFileSearcher
             }
             else
             {
-                using ZipFile subArchive = new ZipFile(stream, leaveOpen: true);
+                using ZipFile subArchive = new ZipFile(stream, leaveOpen: false);
                 {
                     return GetFileContent(subArchive, parent.Parent);
                 }

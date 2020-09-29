@@ -32,7 +32,7 @@ namespace RegexFileSearcher
 
         private static IEnumerable<FilePath> GetCompressedFilesInner(FilePath parentFilePath, Stream zipStream)
         {
-            using var zipFile = new ZipFile(zipStream, leaveOpen: true);
+            using var zipFile = new ZipFile(zipStream, leaveOpen: false);
             foreach (ZipEntry zipEntry in GetZipEntries(zipFile))
             {
                 string zipEntryName = zipEntry.Name;
