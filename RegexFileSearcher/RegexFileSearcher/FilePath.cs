@@ -76,7 +76,7 @@ namespace RegexFileSearcher
             }
         }
 
-        private static string GetFullPath(FilePath filePath)
+        private string GetFullPath(FilePath filePath)
             => filePath.Parent == null ?
                 filePath.Path
                 : System.IO.Path.Combine(GetFullPath(filePath.Parent), filePath.Path);
