@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Eto.Forms;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace RegexFileSearcher
 {
@@ -193,10 +194,13 @@ namespace RegexFileSearcher
                     Add(filePath, count);
                 }
             }
-            catch
-            {
-                // Regex timeout or IO exceptions
-            }
+            catch (RegexMatchTimeoutException) { }
+            catch (ZipException) { }
+            catch (PathTooLongException) { }
+            catch (DirectoryNotFoundException) { }
+            catch (UnauthorizedAccessException) { }
+            catch (FileNotFoundException) { }
+            catch (IOException) { }
         }
 
         private void MatchAll(FilePath filePath)

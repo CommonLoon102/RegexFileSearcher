@@ -22,10 +22,11 @@ namespace RegexFileSearcher
                 using var zipStream = File.OpenRead(filePath.Path);
                 results.AddRange(GetCompressedFilesInner(filePath, zipStream));
             }
-            catch
-            {
-                // File.OpenRead() related exceptions
-            }
+            catch (PathTooLongException) { }
+            catch (DirectoryNotFoundException) { }
+            catch (UnauthorizedAccessException) { }
+            catch (FileNotFoundException) { }
+            catch (IOException) { }
 
             return results;
         }
