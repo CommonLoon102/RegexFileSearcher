@@ -1,7 +1,7 @@
-﻿using System;
+﻿using ICSharpCode.SharpZipLib.Zip;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 
 namespace RegexFileSearcher
 {
@@ -31,7 +31,8 @@ namespace RegexFileSearcher
 
             FilePath reversedFilePath = GetReversedFilePath(this);
             string rootZipPath = reversedFilePath.Path;
-            using ZipArchive archive = ZipFile.Open(rootZipPath, ZipArchiveMode.Read);
+            using var zipStream = File.OpenRead(rootZipPath);
+            using var archive = new ZipFile(zipStream, leaveOpen: true);
             return GetFileContent(archive, reversedFilePath.Parent);
         }
 
@@ -59,9 +60,9 @@ namespace RegexFileSearcher
             return filePaths[0];
         }
 
-        private string GetFileContent(ZipArchive archive, FilePath parent)
+        private string GetFileContent(ZipFile archive, FilePath parent)
         {
-            using Stream stream = archive.GetEntry(parent.Path).Open();
+            using Stream stream = archive.GetInputStream(archive.GetEntry(parent.Path));
             if (parent.Parent == null)
             {
                 TextReader tr = new StreamReader(stream);
@@ -69,7 +70,7 @@ namespace RegexFileSearcher
             }
             else
             {
-                using ZipArchive subArchive = new ZipArchive(stream, ZipArchiveMode.Read);
+                using ZipFile subArchive = new ZipFile(stream, leaveOpen: true);
                 {
                     return GetFileContent(subArchive, parent.Parent);
                 }
