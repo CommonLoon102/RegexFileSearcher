@@ -60,9 +60,9 @@ namespace RegexFileSearcher
             return filePaths[0];
         }
 
-        private string GetFileContent(ZipFile archive, FilePath parent)
+        private string GetFileContent(ZipFile zipFile, FilePath parent)
         {
-            using Stream stream = archive.GetInputStream(archive.GetEntry(parent.Path));
+            using Stream stream = zipFile.GetInputStream(zipFile.GetEntry(parent.Path));
             if (parent.Parent == null)
             {
                 TextReader tr = new StreamReader(stream);
@@ -70,9 +70,9 @@ namespace RegexFileSearcher
             }
             else
             {
-                using ZipFile subArchive = new ZipFile(stream, leaveOpen: false);
+                using var subZipFile = new ZipFile(stream, leaveOpen: false);
                 {
-                    return GetFileContent(subArchive, parent.Parent);
+                    return GetFileContent(subZipFile, parent.Parent);
                 }
             }
         }
