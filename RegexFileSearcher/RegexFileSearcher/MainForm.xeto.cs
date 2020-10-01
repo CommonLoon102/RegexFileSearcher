@@ -175,7 +175,7 @@ namespace RegexFileSearcher
             btnOrderByMatches.Enabled = false;
 
             _cancellationTokenSource = new CancellationTokenSource();
-            var searcher = CreateNewSearcher();
+            RegexSearcher searcher = CreateNewSearcher();
             searcher.SearchEnded += EndSearch;
             searcher.CurrentDirectoryChanged += UpdateStatusLabel;
 
