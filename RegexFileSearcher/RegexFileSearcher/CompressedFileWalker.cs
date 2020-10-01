@@ -1,9 +1,7 @@
-﻿using System;
+﻿using ICSharpCode.SharpZipLib.Zip;
+using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.Linq;
-using ICSharpCode.SharpZipLib.Zip;
 
 namespace RegexFileSearcher
 {
@@ -12,7 +10,7 @@ namespace RegexFileSearcher
         public static IEnumerable<FilePath> GetCompressedFiles(FilePath filePath)
         {
             List<FilePath> results = new List<FilePath>();
-            if (!IsCompressedFile(filePath.Path))
+            if (!IsZipFile(filePath.Path))
             {
                 return results;
             }
@@ -22,6 +20,7 @@ namespace RegexFileSearcher
                 using var zipStream = File.OpenRead(filePath.Path);
                 results.AddRange(GetCompressedFilesInner(filePath, zipStream));
             }
+            catch (ZipException) { }
             catch (PathTooLongException) { }
             catch (DirectoryNotFoundException) { }
             catch (UnauthorizedAccessException) { }
@@ -37,7 +36,7 @@ namespace RegexFileSearcher
             foreach (ZipEntry zipEntry in GetZipEntries(zipFile))
             {
                 string zipEntryName = zipEntry.Name;
-                if (IsCompressedFile(zipEntryName))
+                if (IsZipFile(zipEntryName))
                 {
                     Stream entryStream = null;
                     try
@@ -76,10 +75,10 @@ namespace RegexFileSearcher
             }
         }
 
-        private static bool IsCompressedFile(string fileName)
+        private static bool IsZipFile(string fileName)
         {
             string extension = Path.GetExtension(fileName).ToLower();
-            return extension == ".zip" || extension == ".gz";
+            return extension == ".zip";
         }
     }
 }
