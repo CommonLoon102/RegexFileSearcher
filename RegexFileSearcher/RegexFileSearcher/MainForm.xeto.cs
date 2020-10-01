@@ -184,7 +184,10 @@ namespace RegexFileSearcher
                                   TaskCreationOptions.LongRunning,
                                   TaskScheduler.Default);
 
-            _updateTimer = new Timer(_ => UpdateResultExplorer(), null, 0, 1000);
+            _updateTimer = new Timer(state => UpdateResultExplorer(),
+                state: null,
+                dueTime: 0,
+                period: (int)TimeSpan.FromSeconds(1).TotalMilliseconds);
         }
 
         private void EndSearch(bool isUserRequested = true)
