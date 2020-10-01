@@ -5,9 +5,9 @@ using System.IO;
 
 namespace RegexFileSearcher
 {
-    public static class CompressedFileWalker
+    public static class ZipFileWalker
     {
-        public static IEnumerable<FilePath> GetCompressedFiles(FilePath filePath)
+        public static IEnumerable<FilePath> GetZippedFiles(FilePath filePath)
         {
             List<FilePath> results = new List<FilePath>();
             if (!IsZipFile(filePath.Path))

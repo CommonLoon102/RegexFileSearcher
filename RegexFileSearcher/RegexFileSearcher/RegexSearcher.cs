@@ -18,7 +18,7 @@ namespace RegexFileSearcher
         private readonly int _depth;
         private readonly string _searchDirectory;
         private readonly bool _recurseSubdirectories;
-        private readonly bool _searchInCompressedFiles = true;
+        private readonly bool _searchInZipFiles = true;
         private readonly Regex _filenameRegex;
         private readonly Regex _contentRegex;
         private readonly CancellationToken _cancellationToken;
@@ -134,11 +134,11 @@ namespace RegexFileSearcher
                 }
             }
 
-            if (_searchInCompressedFiles)
+            if (_searchInZipFiles)
             {
                 foreach (FilePath filePath in filePaths)
                 {
-                    yield return CompressedFileWalker.GetCompressedFiles(filePath);
+                    yield return ZipFileWalker.GetZippedFiles(filePath);
                 }
             }
         }
