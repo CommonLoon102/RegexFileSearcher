@@ -18,7 +18,7 @@ namespace RegexFileSearcher
         private readonly int _depth;
         private readonly string _searchDirectory;
         private readonly bool _recurseSubdirectories;
-        private readonly bool _searchInZipFiles = true;
+        private readonly bool _searchInZipFiles;
         private readonly Regex _filenameRegex;
         private readonly Regex _contentRegex;
         private readonly CancellationToken _cancellationToken;
@@ -29,6 +29,7 @@ namespace RegexFileSearcher
         // Waiting for init-only properties in C# 9
         public RegexSearcher(string searchDir,
                              int depth,
+                             bool searchInZipFiles,
                              Regex fileRegex,
                              Regex contentRegex,
                              TreeGridItemCollection itemCollection,
@@ -37,6 +38,7 @@ namespace RegexFileSearcher
             _searchDirectory = searchDir;
             _depth = depth;
             _recurseSubdirectories = depth < 0;
+            _searchInZipFiles = searchInZipFiles;
             _filenameRegex = fileRegex;
             _contentRegex = contentRegex;
             _itemCollection = itemCollection;

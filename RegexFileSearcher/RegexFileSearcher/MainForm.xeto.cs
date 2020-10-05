@@ -65,6 +65,7 @@ namespace RegexFileSearcher
         {
             return new RegexSearcher(fpSearchPath.FilePath,
                                      SearchDepth,
+                                     chkSearchInZipFiles.Checked ?? false,
                                      FilenameRegex,
                                      ContentRegex,
                                      _itemCollection,
