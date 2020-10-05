@@ -9,7 +9,7 @@ namespace RegexFileSearcher
     {
         public static IEnumerable<FilePath> GetZippedFiles(FilePath filePath)
         {
-            List<FilePath> results = new List<FilePath>();
+            var results = new List<FilePath>();
             if (!IsZipFile(filePath.Path))
             {
                 return results;
@@ -32,36 +32,44 @@ namespace RegexFileSearcher
 
         private static IEnumerable<FilePath> GetCompressedFilesInner(FilePath parentFilePath, Stream zipStream)
         {
-            using var zipFile = new ZipFile(zipStream, leaveOpen: false);
-            foreach (ZipEntry zipEntry in GetZipEntries(zipFile))
+            var results = new List<FilePath>();
+            try
             {
-                string zipEntryName = zipEntry.Name;
-                if (IsZipFile(zipEntryName))
+                using var zipFile = new ZipFile(zipStream, leaveOpen: false);
+                foreach (ZipEntry zipEntry in GetZipEntries(zipFile))
                 {
-                    Stream entryStream = null;
-                    try
+                    string zipEntryName = zipEntry.Name;
+                    if (IsZipFile(zipEntryName))
                     {
-                        entryStream = zipFile.GetInputStream(zipEntry);
-                    }
-                    catch
-                    {
-                        // zipFile.GetInputStream() related exceptions
-                    }
-
-                    if (entryStream != null)
-                    {
-                        var filePath = new FilePath(zipEntryName, parentFilePath);
-                        foreach (FilePath compressedFile in GetCompressedFilesInner(filePath, entryStream))
+                        Stream entryStream = null;
+                        try
                         {
-                            yield return compressedFile;
+                            entryStream = zipFile.GetInputStream(zipEntry);
+                        }
+                        catch
+                        {
+                            // zipFile.GetInputStream() related exceptions
+                        }
+
+                        if (entryStream != null)
+                        {
+                            var filePath = new FilePath(zipEntryName, parentFilePath);
+                            foreach (FilePath compressedFile in GetCompressedFilesInner(filePath, entryStream))
+                            {
+                                results.Add(compressedFile);
+                            }
                         }
                     }
-                }
-                else
-                {
-                    yield return new FilePath(zipEntryName, parentFilePath);
+                    else
+                    {
+                        results.Add(new FilePath(zipEntryName, parentFilePath));
+                    }
                 }
             }
+            catch (ZipException) { }
+            catch (IOException) { }
+
+            return results;
         }
 
         private static IEnumerable<ZipEntry> GetZipEntries(ZipFile zipFile)
