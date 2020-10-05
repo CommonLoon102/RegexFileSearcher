@@ -1,13 +1,13 @@
 RegexFileSearcher
 =================
-
 Cross-platform regex file searching tool in .NET Core.
+
+**Protip**: use the [RegexTestBench](https://github.com/CommonLoon102/RegexTestBench) to test your regexes before using them in this tool.
 
 ![](https://github.com/CommonLoon102/RegexFileSearcher/blob/master/image/screenshot.png?raw=true)
 
 Running
 -------
-
 ### Windows
  - Start the app with `RegexFileSearcher.Wpf.exe`
 ### Linux
@@ -20,7 +20,6 @@ Running
  
 Compiling
 ---------
-
 ### Windows
  - Download and open the repo in Visual Studio 2019
  - Publish `RegexFileSearcher.Wpf`
@@ -35,8 +34,7 @@ Compiling
  - Publish with `dotnet publish RegexFileSearcher/RegexFileSearcher.Mac/RegexFileSearcher.Mac.csproj --configuration Release --output publish --self-contained false --runtime osx-x64 --framework netcoreapp3.1`
  
  Debugging
- ---------
- 
+ --------- 
 ### Windows
  - With `Visual Studio 2019 Community`
  - Or with `Visual Studio Code`
