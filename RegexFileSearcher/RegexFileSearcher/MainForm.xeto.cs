@@ -2,6 +2,7 @@ using Eto.Forms;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -11,7 +12,7 @@ namespace RegexFileSearcher
 {
     public partial class MainForm : Form
     {
-        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();        
+        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();
 
         private CancellationTokenSource _cancellationTokenSource;
         private Timer _updateTimer;
@@ -64,6 +65,7 @@ namespace RegexFileSearcher
         {
             return new RegexSearcher(fpSearchPath.FilePath,
                                      SearchDepth,
+                                     chkSearchInZipFiles.Checked ?? false,
                                      FilenameRegex,
                                      ContentRegex,
                                      _itemCollection,
@@ -94,7 +96,7 @@ namespace RegexFileSearcher
                 CreateCell = e => new LinkButton
                 {
                     Text = "Open",
-                    Command = new Command((_, __) => HandleOpenItem(e.Item))
+                    Command = new Command((o, ea) => HandleOpenItem(e.Item))
                 }
             };
 
@@ -114,25 +116,37 @@ namespace RegexFileSearcher
         private void HandleOpenItem(object item)
         {
             var entry = item as SearchResultEntry;
-            OpenInEditor(entry.Path);
+            OpenInEditor(entry.FilePath);
         }
 
-        private void OpenInEditor(string path)
+        private void OpenInEditor(FilePath path)
         {
+            string pathToOpen = path.Parent == null ? path.Path : GetTempPath(path);
+
             if (!string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
             {
-                Process.Start(fpOpenWith.FilePath.Trim(), path);
-                return;
+                Process.Start(fpOpenWith.FilePath.Trim(), pathToOpen);
             }
+            else
+            {
+                try
+                {
+                    FileHandler.Open(pathToOpen);
+                }
+                catch (FileHandlerException ex)
+                {
+                    MessageBox.Show(ex.Message, "Cannot open", MessageBoxType.Information);
+                }
+            }
+        }
 
-            try
-            {
-                FileHandler.Open(path);
-            }
-            catch (FileHandlerException ex)
-            {
-                MessageBox.Show(ex.Message, "Cannot open", MessageBoxType.Information);
-            }
+        private string GetTempPath(FilePath path)
+        {
+            string tempFileName = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
+            tempFileName += Path.GetExtension(path.Path);
+            string tempPath = Path.Combine(Path.GetTempPath(), tempFileName);
+            File.WriteAllText(tempPath, path.GetFileContent());
+            return tempPath;
         }
 
         private void HandleSearch(object sender, EventArgs e)
@@ -162,7 +176,7 @@ namespace RegexFileSearcher
             btnOrderByMatches.Enabled = false;
 
             _cancellationTokenSource = new CancellationTokenSource();
-            var searcher = CreateNewSearcher();
+            RegexSearcher searcher = CreateNewSearcher();
             searcher.SearchEnded += EndSearch;
             searcher.CurrentDirectoryChanged += UpdateStatusLabel;
 
@@ -171,7 +185,10 @@ namespace RegexFileSearcher
                                   TaskCreationOptions.LongRunning,
                                   TaskScheduler.Default);
 
-            _updateTimer = new Timer(_ => UpdateResultExplorer(), null, 0, 1000);
+            _updateTimer = new Timer(state => UpdateResultExplorer(),
+                state: null,
+                dueTime: 0,
+                period: (int)TimeSpan.FromSeconds(1).TotalMilliseconds);
         }
 
         private void EndSearch(bool isUserRequested = true)
@@ -245,12 +262,12 @@ namespace RegexFileSearcher
 
         private void HandleOpenSelected(object sender, EventArgs e)
         {
-            List<string> filesToOpen = new List<string>();
+            List<FilePath> filesToOpen = new List<FilePath>();
             foreach (SearchResultEntry entry in _itemCollection)
             {
                 if (entry.IsSelected)
                 {
-                    filesToOpen.Add(entry.Path);
+                    filesToOpen.Add(entry.FilePath);
                 }
             }
 
@@ -267,7 +284,7 @@ namespace RegexFileSearcher
                 }
             }
 
-            foreach (string path in filesToOpen)
+            foreach (FilePath path in filesToOpen)
             {
                 OpenInEditor(path);
             }
@@ -296,7 +313,7 @@ namespace RegexFileSearcher
 
         private void HandleResultExplorerSelectedItemChanged(object sender, EventArgs e)
         {
-            txtPath.Text = (tvwResultExplorer.SelectedItem as SearchResultEntry)?.Path ?? "";
+            txtPath.Text = (tvwResultExplorer.SelectedItem as SearchResultEntry)?.FilePath.Path ?? "";
         }
     }
 }

@@ -15,6 +15,7 @@ namespace RegexFileSearcher
         private readonly CheckBox chkMultiline;
         private readonly CheckBox chkRightToLeft;
         private readonly CheckBox chkSingleLine;
+        private readonly CheckBox chkSearchInZipFiles;
         private readonly NumericStepper nudTimeout;
         private readonly TextBox txtContentRegex;
         private readonly CheckBox chkContentCompiled;
@@ -39,6 +40,7 @@ namespace RegexFileSearcher
         private readonly TreeGridView tvwResultExplorer;
         private readonly TextBox txtPath;
         private readonly Label lblStatus;
+
         private MainForm(bool initializeControls)
         {
             XamlReader.Load(this);
@@ -52,6 +54,7 @@ namespace RegexFileSearcher
             chkMultiline = FindChild<CheckBox>("chkMultiline");
             chkRightToLeft = FindChild<CheckBox>("chkRightToLeft");
             chkSingleLine = FindChild<CheckBox>("chkSingleLine");
+            chkSearchInZipFiles = FindChild<CheckBox>("chkSearchInZipFiles");
             nudTimeout = FindChild<NumericStepper>("nudTimeout");
             txtContentRegex = FindChild<TextBox>("txtContentRegex");
             chkContentCompiled = FindChild<CheckBox>("chkContentCompiled");

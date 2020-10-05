@@ -6,17 +6,19 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Eto.Forms;
+using ICSharpCode.SharpZipLib.Zip;
 
 namespace RegexFileSearcher
 {
     internal class RegexSearcher
     {
-        private static readonly EnumerationOptions options = new EnumerationOptions { IgnoreInaccessible = true };
+        private static readonly EnumerationOptions _options = new EnumerationOptions { IgnoreInaccessible = true };
         private static volatile bool _searchEnded;
 
         private readonly int _depth;
         private readonly string _searchDirectory;
         private readonly bool _recurseSubdirectories;
+        private readonly bool _searchInZipFiles;
         private readonly Regex _filenameRegex;
         private readonly Regex _contentRegex;
         private readonly CancellationToken _cancellationToken;
@@ -27,6 +29,7 @@ namespace RegexFileSearcher
         // Waiting for init-only properties in C# 9
         public RegexSearcher(string searchDir,
                              int depth,
+                             bool searchInZipFiles,
                              Regex fileRegex,
                              Regex contentRegex,
                              TreeGridItemCollection itemCollection,
@@ -35,6 +38,7 @@ namespace RegexFileSearcher
             _searchDirectory = searchDir;
             _depth = depth;
             _recurseSubdirectories = depth < 0;
+            _searchInZipFiles = searchInZipFiles;
             _filenameRegex = fileRegex;
             _contentRegex = contentRegex;
             _itemCollection = itemCollection;
@@ -96,7 +100,7 @@ namespace RegexFileSearcher
             SearchEnded?.Invoke(false);
         }
 
-        private IEnumerable<IEnumerable<string>> EnumerateFiles(string dir, int currentDepth)
+        private IEnumerable<IEnumerable<FilePath>> EnumerateFiles(string dir, int currentDepth)
         {
             if (!_recurseSubdirectories && currentDepth < 0)
             {
@@ -104,36 +108,39 @@ namespace RegexFileSearcher
             }
 
             CurrentDirectory = dir;
-            IEnumerable<string> files = null;
+            List<FilePath> filePaths = new List<FilePath>();
             try
             {
                 // Although   IgnoreInaccessible  is  true  by  default,
                 // it only applies when you use the 3 parameter overload
-                files = Directory.EnumerateFiles(dir, "*", options);
+                filePaths.AddRange(Directory.EnumerateFiles(dir, "*", _options).Select(f => new FilePath(f)));
             }
             catch
             {
                 // IO exceptions e.g. directory was removed during enumeration
             }
 
-            if (files == null)
-            {
-                yield break;
-            }
-
-            yield return files;
+            yield return filePaths;
 
             // Any direcotry path exception has already been handled above
-            foreach (var subDir in Directory.EnumerateDirectories(dir, "*", options))
+            foreach (var subDir in Directory.EnumerateDirectories(dir, "*", _options))
             {
                 foreach (var subFiles in EnumerateFiles(subDir, currentDepth - 1))
                 {
                     yield return subFiles;
                 }
             }
+
+            if (_searchInZipFiles)
+            {
+                foreach (FilePath filePath in filePaths)
+                {
+                    yield return ZipFileWalker.GetZippedFiles(filePath);
+                }
+            }
         }
 
-        private void MatchWith(Action<string> matcher)
+        private void MatchWith(Action<FilePath> matcher)
         {
             foreach (var files in EnumerateFiles(_searchDirectory, _depth))
             {
@@ -165,52 +172,55 @@ namespace RegexFileSearcher
             }
         }
 
-        private void MatchOnFilename(string fileName)
+        private void MatchOnFilename(FilePath filePath)
         {
-            if (IsFilenameMatches(fileName))
+            if (IsFileNameMatches(filePath))
             {
-                Add(fileName);
+                Add(filePath);
             }
         }
 
-        private void MatchOnContent(string fileName)
+        private void MatchOnContent(FilePath filePath)
         {
             try
             {
-                using var fileReader = File.OpenText(fileName);
-                int count = _contentRegex.Matches(fileReader.ReadToEnd()).Count;
+                string fileContent = filePath.GetFileContent();
+                int count = _contentRegex.Matches(fileContent).Count;
                 if (count > 0)
                 {
-                    Add(fileName, count);
+                    Add(filePath, count);
                 }
             }
-            catch
+            catch (RegexMatchTimeoutException) { }
+            catch (ZipException) { }
+            catch (PathTooLongException) { }
+            catch (DirectoryNotFoundException) { }
+            catch (UnauthorizedAccessException) { }
+            catch (FileNotFoundException) { }
+            catch (IOException) { }
+        }
+
+        private void MatchAll(FilePath filePath)
+        {
+            if (IsFileNameMatches(filePath))
             {
-                // Regex timeout or IO exceptions
+                MatchOnContent(filePath);
             }
         }
 
-        private void MatchAll(string fileName)
+        private bool IsFileNameMatches(FilePath filePath)
         {
-            if (IsFilenameMatches(fileName))
-            {
-                MatchOnContent(fileName);
-            }
-        }
-
-        private bool IsFilenameMatches(string fileName)
-        {
-            fileName = Path.GetFileName(fileName);
+            string fileName = Path.GetFileName(filePath.Path);
             return _filenameRegex.IsMatch(fileName);
         }
 
-        private void Add(string fileName, int count = 0)
+        private void Add(FilePath filePath, int count = 0)
         {
             lock (_itemCollection)
             {
                 if (!_searchEnded)
                 {
-                    _itemCollection.Add(new SearchResultEntry { Matches = count, Path = fileName });
+                    _itemCollection.Add(new SearchResultEntry { Matches = count, FilePath = filePath });
                 }
             }
         }
