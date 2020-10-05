@@ -1,5 +1,6 @@
 RegexFileSearcher
 =================
+
 Cross-platform regex file searching tool in .NET Core
 ![](https://github.com/CommonLoon102/RegexFileSearcher/blob/master/image/screenshot.png?raw=true)
 
