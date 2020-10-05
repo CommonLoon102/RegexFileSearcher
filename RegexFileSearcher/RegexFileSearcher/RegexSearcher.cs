@@ -120,11 +120,6 @@ namespace RegexFileSearcher
                 // IO exceptions e.g. directory was removed during enumeration
             }
 
-            if (!filePaths.Any())
-            {
-                yield break;
-            }
-
             yield return filePaths;
 
             // Any direcotry path exception has already been handled above
