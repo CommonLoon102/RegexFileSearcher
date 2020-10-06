@@ -39,6 +39,7 @@ namespace RegexFileSearcher
         private readonly TreeGridView tvwResultExplorer;
         private readonly TextBox txtPath;
         private readonly Label lblStatus;
+        private readonly TextBox txtRegexError;
         private MainForm(bool initializeControls)
         {
             XamlReader.Load(this);
@@ -76,6 +77,7 @@ namespace RegexFileSearcher
             tvwResultExplorer = FindChild<TreeGridView>("tvwResultExplorer");
             txtPath = FindChild<TextBox>("txtPath");
             lblStatus = FindChild<Label>("lblStatus");
+            txtRegexError = FindChild<TextBox>("txtRegexError");
         }
     }
 }

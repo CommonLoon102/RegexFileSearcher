@@ -140,6 +140,16 @@
     </TableRow>
     <TableRow>
       <TableCell>
+        <Label>Regex Parse Error:</Label>
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell ScaleWidth="True">
+        <TextBox ID="txtRegexError" ReadOnly="True" />
+      </TableCell>
+    </TableRow>
+    <TableRow>
+      <TableCell>
         <Label>Open With Editor:</Label>
       </TableCell>
     </TableRow>
