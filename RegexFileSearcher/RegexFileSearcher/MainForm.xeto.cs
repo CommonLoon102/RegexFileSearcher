@@ -31,9 +31,9 @@ namespace RegexFileSearcher
 
         private void OnTextBoxChangedRegex(object sender, EventArgs e)
         {
-            btnStartSearch.Enabled = IsRegexTextBoxValid(txtFilenameRegex) && IsRegexTextBoxValid(txtContentRegex);
+            btnStartSearch.Enabled = ValidateRegex(txtFilenameRegex) & ValidateRegex(txtContentRegex); // Use & instead of && to validate both textboxes all the time
 
-            static bool IsRegexTextBoxValid(TextBox textBox)
+            static bool ValidateRegex(TextBox textBox)
             {
                 bool isRegexValid = RegexValidator.IsRegexValid(textBox.Text, out string errorMessage);
                 textBox.ToolTip = isRegexValid ? null : errorMessage;
