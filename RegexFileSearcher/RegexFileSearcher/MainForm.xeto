@@ -11,12 +11,12 @@
   <TableLayout>
     <TableRow>
       <TableCell>
-        <Label>Filename Regex:</Label>
-      </TableCell>
-     </TableRow>
-    <TableRow>
-      <TableCell ScaleWidth="True">
-        <TextBox ID="txtFilenameRegex"></TextBox>
+        <Panel Padding="5">
+          <StackLayout Orientation="Vertical" HorizontalContentAlignment="Stretch">
+            <Label>Filename Regex:</Label>
+            <TextBox ID="txtFileNameRegex" />
+          </StackLayout>
+        </Panel>
       </TableCell>
     </TableRow>
     <TableRow>
@@ -52,7 +52,7 @@
                                     MaximumDecimalPlaces="0"
                                     Value="2"
                                     Increment="1"
-                                    Width="90"/>
+                                    Width="90" />
                   </Panel>
                   <Label>s</Label>
                 </StackLayout>
@@ -64,12 +64,12 @@
     </TableRow>
     <TableRow>
       <TableCell>
-        <Label>Content Regex:</Label>
-      </TableCell>
-    </TableRow>
-    <TableRow>
-      <TableCell ScaleWidth="True">
-        <TextBox ID="txtContentRegex"></TextBox>
+        <Panel Padding="5">
+          <StackLayout Orientation="Vertical" HorizontalContentAlignment="Stretch">
+            <Label>Content Regex:</Label>
+            <TextBox ID="txtContentRegex" />
+          </StackLayout>
+        </Panel>
       </TableCell>
     </TableRow>
     <TableRow>
@@ -104,7 +104,7 @@
                                     MaximumDecimalPlaces="0"
                                     Value="2"
                                     Increment="1"
-                                    Width="90"/>
+                                    Width="90" />
                   </Panel>
                   <Label>s</Label>
                 </StackLayout>
@@ -116,17 +116,21 @@
     </TableRow>
     <TableRow>
       <TableCell>
-        <Label>Search Directory:</Label>
+        <Panel Padding="5,2,0,2">
+          <Label>Search Directory:</Label>
+        </Panel>
       </TableCell>
     </TableRow>
     <TableRow>
       <TableCell>
-        <FilePicker ID="fpSearchPath" FileAction="SelectFolder"></FilePicker>
+        <Panel Padding="5,2,5,2">
+          <FilePicker ID="fpSearchPath" FileAction="SelectFolder" />
+        </Panel>
       </TableCell>
     </TableRow>
     <TableRow>
       <TableCell>
-        <StackLayout Padding="0,5,0,5" Orientation="Horizontal">
+        <StackLayout Padding="5,5,0,5" Orientation="Horizontal">
           <Label>Search in Subdirectories:</Label>
           <Panel Padding="5,0,5,0">
             <ComboBox ID="cboSubdirectories" Width="200" />
@@ -136,22 +140,28 @@
     </TableRow>
     <TableRow>
       <TableCell>
-        <Button ID="btnStartSearch" Click="HandleSearch">Start Search</Button>
+        <Panel Padding="5,5,5,20">
+          <Button ID="btnStartSearch" Click="HandleSearch">Start Search</Button>
+        </Panel>
       </TableCell>
     </TableRow>
     <TableRow>
       <TableCell>
-        <Label>Open With Editor:</Label>
+        <Panel Padding="5,2,5,2">
+          <Label>Open With Editor:</Label>
+        </Panel>
       </TableCell>
     </TableRow>
     <TableRow>
       <TableCell ScaleWidth="True">
+        <Panel Padding="5,2,5,5">
           <FilePicker ID="fpOpenWith" FileAction="OpenFile" />
+        </Panel>
       </TableCell>
     </TableRow>
     <TableRow>
       <TableCell>
-        <StackLayout Orientation="Vertical">
+        <StackLayout Orientation="Vertical" Padding="5,2,2,5">
           <StackLayout Orientation="Horizontal">
             <Button ID="btnSelectAll" Click="HandleSelectAll">Select All</Button>
             <Button ID="btnSelectNone" Click="HandleSelectNone">Select None</Button>
@@ -164,17 +174,19 @@
     </TableRow>
     <TableRow ScaleHeight="True">
       <TableCell>
-        <TreeGridView ID="tvwResultExplorer" SelectedItemChanged="HandleResultExplorerSelectedItemChanged" />
+        <Panel Padding="5,2,5,2">
+          <TreeGridView ID="tvwResultExplorer" SelectedItemChanged="HandleResultExplorerSelectedItemChanged" />
+        </Panel>
       </TableCell>
     </TableRow>
     <TableRow>
       <TableCell>
-        <TextBox ID="txtPath" ReadOnly="True" />
-      </TableCell>
-    </TableRow>
-    <TableRow>
-      <TableCell>
-        <Label ID="lblStatus" />
+        <Panel Padding="5,0,5,0">
+          <StackLayout Orientation="Vertical" HorizontalContentAlignment="Stretch">
+            <TextBox ID="txtPath" ReadOnly="True" />
+            <Label ID="lblStatus" />
+          </StackLayout>
+        </Panel>
       </TableCell>
     </TableRow>
   </TableLayout>
