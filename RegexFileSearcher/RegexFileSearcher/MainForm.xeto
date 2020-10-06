@@ -41,8 +41,9 @@
               </StackLayout>
             </TableCell>
             <TableCell>
-              <StackLayout Orientation="Vertical">
-                <StackLayout  VerticalContentAlignment="Center" ToolTip="Stop search after specified seconds" Padding="20,1,1,1" Orientation="Horizontal">
+              <StackLayout Orientation="Vertical" Padding="10,0,0,0">
+                <CheckBox ID="chkSearchInZipFiles" ToolTip="Search in zip files recursively">Search in .zip Files</CheckBox>
+                <StackLayout VerticalContentAlignment="Center" ToolTip="Stop search after specified seconds" Orientation="Horizontal">
                   <Label>Timeout</Label>
                   <Panel Padding="5,0,5,0">
                     <NumericStepper ID="nudTimeout"
