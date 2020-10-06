@@ -30,19 +30,23 @@ namespace RegexFileSearcher
 
         private void OnTextBoxChangedRegex(object sender, EventArgs e)
         {
-            TextBox textBox = ((TextBox)sender);
-            if (RegexValidator.IsValidRegex(textBox.Text, out string errorMessage))
+            btnStartSearch.Enabled = ValidateTextBox(txtFilenameRegex) & ValidateTextBox(txtContentRegex);
+
+            bool ValidateTextBox(TextBox textBox)
             {
-                textBox.ToolTip = null;
-                textBox.BackgroundColor = Colors.White;
-                btnStartSearch.Enabled = true;
-            }
-            else
-            {
-                textBox.ToolTip = errorMessage;
-                textBox.BackgroundColor = Colors.LightSalmon;
-                btnStartSearch.Enabled = false;
-            }
+                if (RegexValidator.IsValidRegex(textBox.Text, out string errorMessage))
+                {
+                    textBox.ToolTip = null;
+                    textBox.BackgroundColor = Colors.White;
+                    return true;
+                }
+                else
+                {
+                    textBox.ToolTip = errorMessage;
+                    textBox.BackgroundColor = Colors.LightSalmon;
+                    return false;
+                }
+            }     
         }
 
         private int SearchDepth => int.Parse(cboSubdirectories.SelectedKey);
