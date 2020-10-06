@@ -1,4 +1,3 @@
-using Eto.Forms;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,12 +5,14 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Eto.Drawing;
+using Eto.Forms;
 
 namespace RegexFileSearcher
 {
     public partial class MainForm : Form
     {
-        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();        
+        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();
 
         private CancellationTokenSource _cancellationTokenSource;
         private Timer _updateTimer;
@@ -22,6 +23,26 @@ namespace RegexFileSearcher
         {
             InitializeSubdirectoryPicker();
             InitializeResultExplorer();
+
+            txtFilenameRegex.TextChanged += OnTextBoxChangedRegex;
+            txtContentRegex.TextChanged += OnTextBoxChangedRegex;
+        }
+
+        private void OnTextBoxChangedRegex(object sender, EventArgs e)
+        {
+            TextBox textBox = ((TextBox)sender);
+            if (RegexValidator.IsValidRegex(textBox.Text, out string errorMessage))
+            {
+                textBox.ToolTip = null;
+                textBox.BackgroundColor = Colors.White;
+                btnStartSearch.Enabled = true;
+            }
+            else
+            {
+                textBox.ToolTip = errorMessage;
+                textBox.BackgroundColor = Colors.LightSalmon;
+                btnStartSearch.Enabled = false;
+            }
         }
 
         private int SearchDepth => int.Parse(cboSubdirectories.SelectedKey);
@@ -89,7 +110,7 @@ namespace RegexFileSearcher
 
         private void InitializeResultExplorer()
         {
-            var openCell = new CustomCell
+            CustomCell openCell = new CustomCell
             {
                 CreateCell = e => new LinkButton
                 {
@@ -98,7 +119,7 @@ namespace RegexFileSearcher
                 }
             };
 
-            var columns = new[]
+            GridColumn[] columns = new[]
             {
                 new GridColumn { HeaderText = "Select",  DataCell = new CheckBoxCell(0), Editable = true },
                 new GridColumn { HeaderText = "Open",    DataCell = openCell },
@@ -113,7 +134,7 @@ namespace RegexFileSearcher
 
         private void HandleOpenItem(object item)
         {
-            var entry = item as SearchResultEntry;
+            SearchResultEntry entry = item as SearchResultEntry;
             OpenInEditor(entry.Path);
         }
 
@@ -162,7 +183,7 @@ namespace RegexFileSearcher
             btnOrderByMatches.Enabled = false;
 
             _cancellationTokenSource = new CancellationTokenSource();
-            var searcher = CreateNewSearcher();
+            RegexSearcher searcher = CreateNewSearcher();
             searcher.SearchEnded += EndSearch;
             searcher.CurrentDirectoryChanged += UpdateStatusLabel;
 
