@@ -46,7 +46,7 @@ namespace RegexFileSearcher
                     textBox.BackgroundColor = Colors.LightSalmon;
                     return false;
                 }
-            }     
+            }
         }
 
         private int SearchDepth => int.Parse(cboSubdirectories.SelectedKey);
