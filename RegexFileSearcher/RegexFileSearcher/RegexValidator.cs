@@ -5,18 +5,19 @@ namespace RegexFileSearcher
 {
     public class RegexValidator
     {
-        public static bool IsValidRegex(string pattern, out string errorMessage)
+        public static bool IsRegexValid(string pattern, out string errorMessage)
         {
             errorMessage = "";
             try
             {
-                Regex.Match("", pattern);
+                Regex.IsMatch("", pattern);
             }
             catch (ArgumentException e)
             {
                 errorMessage = e.Message;
                 return false;
             }
+
             return true;
         }
     }

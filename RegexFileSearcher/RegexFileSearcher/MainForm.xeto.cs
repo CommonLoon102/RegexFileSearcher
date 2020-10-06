@@ -1,3 +1,5 @@
+using Eto.Drawing;
+using Eto.Forms;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,8 +8,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Eto.Drawing;
-using Eto.Forms;
 
 namespace RegexFileSearcher
 {
@@ -31,22 +31,14 @@ namespace RegexFileSearcher
 
         private void OnTextBoxChangedRegex(object sender, EventArgs e)
         {
-            btnStartSearch.Enabled = ValidateTextBox(txtFilenameRegex) & ValidateTextBox(txtContentRegex);
+            btnStartSearch.Enabled = ValidateTextBox(txtFilenameRegex) && ValidateTextBox(txtContentRegex);
 
-            bool ValidateTextBox(TextBox textBox)
+            static bool ValidateTextBox(TextBox textBox)
             {
-                if (RegexValidator.IsValidRegex(textBox.Text, out string errorMessage))
-                {
-                    textBox.ToolTip = null;
-                    textBox.BackgroundColor = Colors.White;
-                    return true;
-                }
-                else
-                {
-                    textBox.ToolTip = errorMessage;
-                    textBox.BackgroundColor = Colors.LightSalmon;
-                    return false;
-                }
+                bool isRegexValid = RegexValidator.IsRegexValid(textBox.Text, out string errorMessage);
+                textBox.ToolTip = isRegexValid ? null : errorMessage;
+                textBox.BackgroundColor = isRegexValid ? Colors.White : Colors.LightSalmon;
+                return isRegexValid;
             }
         }
 
@@ -116,7 +108,7 @@ namespace RegexFileSearcher
 
         private void InitializeResultExplorer()
         {
-            CustomCell openCell = new CustomCell
+            var openCell = new CustomCell
             {
                 CreateCell = e => new LinkButton
                 {
@@ -125,7 +117,7 @@ namespace RegexFileSearcher
                 }
             };
 
-            GridColumn[] columns = new[]
+            var columns = new[]
             {
                 new GridColumn { HeaderText = "Select",  DataCell = new CheckBoxCell(0), Editable = true },
                 new GridColumn { HeaderText = "Open",    DataCell = openCell },
@@ -199,6 +191,8 @@ namespace RegexFileSearcher
             lblStatus.Text = string.Empty;
             txtPath.Text = string.Empty;
             btnOrderByMatches.Enabled = false;
+            txtFilenameRegex.Enabled = false;
+            txtContentRegex.Enabled = false;
 
             _cancellationTokenSource = new CancellationTokenSource();
             RegexSearcher searcher = CreateNewSearcher();
@@ -230,6 +224,8 @@ namespace RegexFileSearcher
             {
                 btnStartSearch.Text = "Start Search";
                 btnOrderByMatches.Enabled = true;
+                txtFilenameRegex.Enabled = true;
+                txtContentRegex.Enabled = true;
             });
 
             _searchEnded = true;
