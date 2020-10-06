@@ -14,7 +14,7 @@
         <Panel Padding="5">
           <StackLayout Orientation="Vertical" HorizontalContentAlignment="Stretch">
             <Label>Filename Regex:</Label>
-            <TextBox ID="txtFilenameRegex" />
+            <TextBox ID="txtFileNameRegex" />
           </StackLayout>
         </Panel>
       </TableCell>

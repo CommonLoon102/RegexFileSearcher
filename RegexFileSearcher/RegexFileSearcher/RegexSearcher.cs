@@ -19,7 +19,7 @@ namespace RegexFileSearcher
         private readonly string _searchDirectory;
         private readonly bool _recurseSubdirectories;
         private readonly bool _searchInZipFiles;
-        private readonly Regex _filenameRegex;
+        private readonly Regex _fileNameRegex;
         private readonly Regex _contentRegex;
         private readonly CancellationToken _cancellationToken;
         private readonly TreeGridItemCollection _itemCollection;
@@ -39,7 +39,7 @@ namespace RegexFileSearcher
             _depth = depth;
             _recurseSubdirectories = depth < 0;
             _searchInZipFiles = searchInZipFiles;
-            _filenameRegex = fileRegex;
+            _fileNameRegex = fileRegex;
             _contentRegex = contentRegex;
             _itemCollection = itemCollection;
             _cancellationToken = token;
@@ -71,12 +71,12 @@ namespace RegexFileSearcher
                 return;
             }
 
-            switch (_filenameRegex, _contentRegex)
+            switch (_fileNameRegex, _contentRegex)
             {
                 case (null, null):
                     break;
                 case (_, null):
-                    MatchWith(MatchOnFilename);
+                    MatchWith(MatchOnFileName);
                     break;
                 case (null, _):
                     MatchWith(MatchOnContent);
@@ -172,7 +172,7 @@ namespace RegexFileSearcher
             }
         }
 
-        private void MatchOnFilename(FilePath filePath)
+        private void MatchOnFileName(FilePath filePath)
         {
             if (IsFileNameMatches(filePath))
             {
@@ -211,7 +211,7 @@ namespace RegexFileSearcher
         private bool IsFileNameMatches(FilePath filePath)
         {
             string fileName = Path.GetFileName(filePath.Path);
-            return _filenameRegex.IsMatch(fileName);
+            return _fileNameRegex.IsMatch(fileName);
         }
 
         private void Add(FilePath filePath, int count = 0)

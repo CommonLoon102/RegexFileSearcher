@@ -5,7 +5,7 @@ namespace RegexFileSearcher
 {
     public partial class MainForm : Form
     {
-        private readonly TextBox txtFilenameRegex;
+        private readonly TextBox txtFileNameRegex;
         private readonly CheckBox chkCompiled;
         private readonly CheckBox chkCultureInvariant;
         private readonly CheckBox chkEcmaScript;
@@ -44,7 +44,7 @@ namespace RegexFileSearcher
         private MainForm(bool initializeControls)
         {
             XamlReader.Load(this);
-            txtFilenameRegex = FindChild<TextBox>("txtFilenameRegex");
+            txtFileNameRegex = FindChild<TextBox>("txtFileNameRegex");
             chkCompiled = FindChild<CheckBox>("chkCompiled");
             chkCultureInvariant = FindChild<CheckBox>("chkCultureInvariant");
             chkEcmaScript = FindChild<CheckBox>("chkEcmaScript");

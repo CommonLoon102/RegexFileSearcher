@@ -25,15 +25,15 @@ namespace RegexFileSearcher
             InitializeSubdirectoryPicker();
             InitializeResultExplorer();
 
-            txtFilenameRegex.TextChanged += OnTextBoxChangedRegex;
+            txtFileNameRegex.TextChanged += OnTextBoxChangedRegex;
             txtContentRegex.TextChanged += OnTextBoxChangedRegex;
         }
 
         private void OnTextBoxChangedRegex(object sender, EventArgs e)
         {
-            bool isFilenameRegexValid = ValidateRegex(txtFilenameRegex);
+            bool isFileNameRegexValid = ValidateRegex(txtFileNameRegex);
             bool isContentRegexValid = ValidateRegex(txtContentRegex);
-            btnStartSearch.Enabled = isFilenameRegexValid && isContentRegexValid;
+            btnStartSearch.Enabled = isFileNameRegexValid && isContentRegexValid;
 
             static bool ValidateRegex(TextBox textBox)
             {
@@ -46,11 +46,11 @@ namespace RegexFileSearcher
 
         private int SearchDepth => int.Parse(cboSubdirectories.SelectedKey);
 
-        private Regex FilenameRegex =>
-            string.IsNullOrEmpty(txtFilenameRegex.Text)
+        private Regex FileNameRegex =>
+            string.IsNullOrEmpty(txtFileNameRegex.Text)
             ? null : new RegexPattern
             {
-                Pattern = txtFilenameRegex.Text,
+                Pattern = txtFileNameRegex.Text,
                 IsCompiled = chkCompiled.Checked ?? false,
                 IsCultureInvariant = chkCultureInvariant.Checked ?? false,
                 IsEcmaScript = chkEcmaScript.Checked ?? false,
@@ -85,7 +85,7 @@ namespace RegexFileSearcher
             return new RegexSearcher(fpSearchPath.FilePath,
                                      SearchDepth,
                                      chkSearchInZipFiles.Checked ?? false,
-                                     FilenameRegex,
+                                     FileNameRegex,
                                      ContentRegex,
                                      _itemCollection,
                                      _cancellationTokenSource.Token);
@@ -193,7 +193,7 @@ namespace RegexFileSearcher
             lblStatus.Text = string.Empty;
             txtPath.Text = string.Empty;
             btnOrderByMatches.Enabled = false;
-            txtFilenameRegex.Enabled = false;
+            txtFileNameRegex.Enabled = false;
             txtContentRegex.Enabled = false;
 
             _cancellationTokenSource = new CancellationTokenSource();
@@ -226,7 +226,7 @@ namespace RegexFileSearcher
             {
                 btnStartSearch.Text = "Start Search";
                 btnOrderByMatches.Enabled = true;
-                txtFilenameRegex.Enabled = true;
+                txtFileNameRegex.Enabled = true;
                 txtContentRegex.Enabled = true;
             });
 
