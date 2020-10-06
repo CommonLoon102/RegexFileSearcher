@@ -11,12 +11,12 @@
   <TableLayout>
     <TableRow>
       <TableCell>
-        <Label>Filename Regex:</Label>
-      </TableCell>
-     </TableRow>
-    <TableRow>
-      <TableCell ScaleWidth="True">
-        <TextBox ID="txtFilenameRegex"></TextBox>
+        <Panel Padding="5">
+          <StackLayout Orientation="Vertical" HorizontalContentAlignment="Stretch">
+            <Label>Filename Regex:</Label>
+            <TextBox ID="txtFilenameRegex" />
+          </StackLayout>
+        </Panel>
       </TableCell>
     </TableRow>
     <TableRow>
@@ -52,7 +52,7 @@
                                     MaximumDecimalPlaces="0"
                                     Value="2"
                                     Increment="1"
-                                    Width="90"/>
+                                    Width="90" />
                   </Panel>
                   <Label>s</Label>
                 </StackLayout>
@@ -64,12 +64,12 @@
     </TableRow>
     <TableRow>
       <TableCell>
-        <Label>Content Regex:</Label>
-      </TableCell>
-    </TableRow>
-    <TableRow>
-      <TableCell ScaleWidth="True">
-        <TextBox ID="txtContentRegex"></TextBox>
+        <Panel Padding="5">
+          <StackLayout Orientation="Vertical" HorizontalContentAlignment="Stretch">
+            <Label>Content Regex:</Label>
+            <TextBox ID="txtContentRegex" />
+          </StackLayout>
+        </Panel>
       </TableCell>
     </TableRow>
     <TableRow>
@@ -104,7 +104,7 @@
                                     MaximumDecimalPlaces="0"
                                     Value="2"
                                     Increment="1"
-                                    Width="90"/>
+                                    Width="90" />
                   </Panel>
                   <Label>s</Label>
                 </StackLayout>
@@ -121,7 +121,7 @@
     </TableRow>
     <TableRow>
       <TableCell>
-        <FilePicker ID="fpSearchPath" FileAction="SelectFolder"></FilePicker>
+        <FilePicker ID="fpSearchPath" FileAction="SelectFolder" />
       </TableCell>
     </TableRow>
     <TableRow>

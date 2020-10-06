@@ -31,13 +31,13 @@ namespace RegexFileSearcher
 
         private void OnTextBoxChangedRegex(object sender, EventArgs e)
         {
-            btnStartSearch.Enabled = ValidateTextBox(txtFilenameRegex) && ValidateTextBox(txtContentRegex);
+            btnStartSearch.Enabled = IsRegexTextBoxValid(txtFilenameRegex) && IsRegexTextBoxValid(txtContentRegex);
 
-            static bool ValidateTextBox(TextBox textBox)
+            static bool IsRegexTextBoxValid(TextBox textBox)
             {
                 bool isRegexValid = RegexValidator.IsRegexValid(textBox.Text, out string errorMessage);
                 textBox.ToolTip = isRegexValid ? null : errorMessage;
-                textBox.BackgroundColor = isRegexValid ? Colors.White : Colors.LightSalmon;
+                textBox.Parent.Parent.BackgroundColor = isRegexValid ? Colors.White : Colors.LightSalmon;
                 return isRegexValid;
             }
         }
