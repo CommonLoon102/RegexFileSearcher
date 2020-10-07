@@ -16,7 +16,7 @@ namespace RegexFileSearcher
         private readonly CheckBox chkRightToLeft;
         private readonly CheckBox chkSingleLine;
         private readonly CheckBox chkSearchInZipFiles;
-        private readonly NumericStepper nudTimeout;
+        private readonly NumericStepper nudMaxFileSize;
         private readonly TextBox txtContentRegex;
         private readonly CheckBox chkContentCompiled;
         private readonly CheckBox chkContentCultureInvariant;
@@ -55,7 +55,7 @@ namespace RegexFileSearcher
             chkRightToLeft = FindChild<CheckBox>("chkRightToLeft");
             chkSingleLine = FindChild<CheckBox>("chkSingleLine");
             chkSearchInZipFiles = FindChild<CheckBox>("chkSearchInZipFiles");
-            nudTimeout = FindChild<NumericStepper>("nudTimeout");
+            nudMaxFileSize = FindChild<NumericStepper>("nudMaxFileSize");
             txtContentRegex = FindChild<TextBox>("txtContentRegex");
             chkContentCompiled = FindChild<CheckBox>("chkContentCompiled");
             chkContentCultureInvariant = FindChild<CheckBox>("chkContentCultureInvariant");
