@@ -52,7 +52,7 @@
                                     MaximumDecimalPlaces="0"
                                     Value="5"
                                     Increment="1"
-                                    Width="50"
+                                    Width="120"
                                     ToolTip="Use zero for unlimited" />
                   </Panel>
                   <Label ToolTip="1 MiB (mebibyte) is 1024*1024 bytes">MiB</Label>
@@ -105,7 +105,7 @@
                                     MaximumDecimalPlaces="0"
                                     Value="2"
                                     Increment="1"
-                                    Width="90" />
+                                    Width="120" />
                   </Panel>
                   <Label>s</Label>
                 </StackLayout>
@@ -164,11 +164,21 @@
       <TableCell>
         <StackLayout Orientation="Vertical" Padding="5,2,2,5">
           <StackLayout Orientation="Horizontal">
-            <Button ID="btnSelectAll" Click="HandleSelectAll">Select All</Button>
-            <Button ID="btnSelectNone" Click="HandleSelectNone">Select None</Button>
-            <Button ID="btnInvertSelection" Click="HandleInvertSelection">Invert Selection</Button>
-            <Button ID="btnOpenSelected" Click="HandleOpenSelected">Open Selected</Button>
-            <Button ID="btnOrderByMatches" Click="HandleOrderByMatches">Order by Matches</Button>
+            <Panel Padding="0,0,5,0">
+              <Button ID="btnSelectAll" Click="HandleSelectAll">Select All</Button>
+            </Panel>
+            <Panel Padding="0,0,5,0">
+              <Button ID="btnSelectNone" Click="HandleSelectNone">Select None</Button>
+            </Panel>
+            <Panel Padding="0,0,5,0">
+              <Button ID="btnInvertSelection" Click="HandleInvertSelection">Invert Selection</Button>
+            </Panel>
+            <Panel Padding="0,0,5,0">
+              <Button ID="btnOpenSelected" Click="HandleOpenSelected">Open Selected</Button>
+            </Panel>
+            <Panel Padding="0,0,5,0">
+              <Button ID="btnOrderByMatches" Click="HandleOrderByMatches">Order by Matches</Button>
+            </Panel>
           </StackLayout>
         </StackLayout>
       </TableCell>
