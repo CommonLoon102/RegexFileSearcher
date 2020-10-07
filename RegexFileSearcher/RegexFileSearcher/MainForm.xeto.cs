@@ -19,6 +19,7 @@ namespace RegexFileSearcher
 
         private CancellationTokenSource _cancellationTokenSource;
         private Timer _updateTimer;
+        private Color _defaultPanelBackgroundColor;
         private bool _matchNumberOrdering;
         private volatile bool _searchEnded = true;
 
@@ -29,6 +30,7 @@ namespace RegexFileSearcher
 
             txtFileNameRegex.TextChanged += OnTextBoxChangedRegex;
             txtContentRegex.TextChanged += OnTextBoxChangedRegex;
+            _defaultPanelBackgroundColor = txtFileNameRegex.Parent.Parent.BackgroundColor;
         }
 
         private void OnTextBoxChangedRegex(object sender, EventArgs e)
@@ -37,11 +39,11 @@ namespace RegexFileSearcher
             bool isContentRegexValid = ValidateRegex(txtContentRegex);
             btnStartSearch.Enabled = isFileNameRegexValid && isContentRegexValid;
 
-            static bool ValidateRegex(TextBox textBox)
+            bool ValidateRegex(TextBox textBox)
             {
                 bool isRegexValid = RegexValidator.IsRegexValid(textBox.Text, out string errorMessage);
                 textBox.ToolTip = isRegexValid ? null : errorMessage;
-                textBox.Parent.Parent.BackgroundColor = isRegexValid ? Colors.White : Colors.LightSalmon;
+                textBox.Parent.Parent.BackgroundColor = isRegexValid ? _defaultPanelBackgroundColor : Colors.LightSalmon;
                 return isRegexValid;
             }
         }
