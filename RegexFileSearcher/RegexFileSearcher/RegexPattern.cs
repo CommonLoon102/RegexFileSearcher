@@ -15,9 +15,9 @@ namespace RegexFileSearcher
         public bool IsSingleLine { get; set; }
         public bool IsRightToLeft { get; set; }
         public bool IsCultureInvariant { get; set; }
-        public int Timeout { get; set; }
+        public int TimeoutInSeconds { get; set; }
 
-        public Regex Regex => new Regex(Pattern, RegexOptions, TimeSpan.FromSeconds(Timeout));
+        public Regex Regex => new Regex(Pattern, RegexOptions, TimeSpan.FromSeconds(TimeoutInSeconds));
 
         private RegexOptions RegexOptions
         {

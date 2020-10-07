@@ -42,19 +42,20 @@
             </TableCell>
             <TableCell>
               <StackLayout Orientation="Vertical" Padding="10,0,0,0">
-                <CheckBox ID="chkSearchInZipFiles" ToolTip="Search in zip files recursively">Search in .zip Files</CheckBox>
+                <CheckBox ID="chkSearchInZipFiles" Checked="True" ToolTip="Search in zip files recursively">Search in .zip Files</CheckBox>
                 <StackLayout VerticalContentAlignment="Center" ToolTip="Stop search after specified seconds" Orientation="Horizontal">
-                  <Label>Timeout</Label>
+                  <Label ToolTip="Skip files that are larger than the specified size (zip files are handled like they were folders)">Max File Size</Label>
                   <Panel Padding="5,0,5,0">
-                    <NumericStepper ID="nudTimeout"
-                                    MinValue="1"
-                                    MaxValue="100"
+                    <NumericStepper ID="nudMaxFileSize"
+                                    MinValue="0"
+                                    MaxValue="1024"
                                     MaximumDecimalPlaces="0"
-                                    Value="2"
+                                    Value="5"
                                     Increment="1"
-                                    Width="90" />
+                                    Width="50"
+                                    ToolTip="Use zero for unlimited" />
                   </Panel>
-                  <Label>s</Label>
+                  <Label ToolTip="1 MiB (mebibyte) is 1024*1024 bytes">MiB</Label>
                 </StackLayout>
               </StackLayout>
             </TableCell>

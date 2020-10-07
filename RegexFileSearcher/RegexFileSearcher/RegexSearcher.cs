@@ -19,10 +19,12 @@ namespace RegexFileSearcher
         private readonly string _searchDirectory;
         private readonly bool _recurseSubdirectories;
         private readonly bool _searchInZipFiles;
+        private readonly int _maxFileSize;
         private readonly Regex _fileNameRegex;
         private readonly Regex _contentRegex;
         private readonly CancellationToken _cancellationToken;
         private readonly TreeGridItemCollection _itemCollection;
+        private readonly ZipFileWalker _zipFileWalker;
 
         private string _currentDirectory;
 
@@ -30,6 +32,7 @@ namespace RegexFileSearcher
         public RegexSearcher(string searchDir,
                              int depth,
                              bool searchInZipFiles,
+                             int maxFileSize,
                              Regex fileRegex,
                              Regex contentRegex,
                              TreeGridItemCollection itemCollection,
@@ -39,11 +42,13 @@ namespace RegexFileSearcher
             _depth = depth;
             _recurseSubdirectories = depth < 0;
             _searchInZipFiles = searchInZipFiles;
+            _maxFileSize = maxFileSize;
             _fileNameRegex = fileRegex;
             _contentRegex = contentRegex;
             _itemCollection = itemCollection;
             _cancellationToken = token;
             _searchEnded = false;
+            _zipFileWalker = new ZipFileWalker(_maxFileSize);
         }
 
         public string CurrentDirectory
@@ -113,29 +118,28 @@ namespace RegexFileSearcher
             {
                 // Although   IgnoreInaccessible  is  true  by  default,
                 // it only applies when you use the 3 parameter overload
-                filePaths.AddRange(Directory.EnumerateFiles(dir, "*", _options).Select(f => new FilePath(f)));
+                filePaths.AddRange(new DirectoryInfo(dir).EnumerateFiles("*", _options)
+                    .Where(fi => fi.Name.IsZipFile() || _maxFileSize == 0 || fi.Length <= _maxFileSize)
+                    .Select(fi => new FilePath(fi.FullName)));
             }
             catch
             {
                 // IO exceptions e.g. directory was removed during enumeration
             }
 
-            yield return filePaths;
+            yield return filePaths.NotZippedFiles();
 
             // Any direcotry path exception has already been handled above
             foreach (var subDir in Directory.EnumerateDirectories(dir, "*", _options))
             {
-                foreach (var subFiles in EnumerateFiles(subDir, currentDepth - 1))
-                {
-                    yield return subFiles;
-                }
+                yield return EnumerateFiles(subDir, currentDepth - 1).SelectMany(f => f);
             }
 
             if (_searchInZipFiles)
             {
                 foreach (FilePath filePath in filePaths)
                 {
-                    yield return ZipFileWalker.GetZippedFiles(filePath);
+                    yield return _zipFileWalker.GetZippedFiles(filePath);
                 }
             }
         }

@@ -5,12 +5,19 @@ using System.IO;
 
 namespace RegexFileSearcher
 {
-    public static class ZipFileWalker
+    internal class ZipFileWalker
     {
-        public static IEnumerable<FilePath> GetZippedFiles(FilePath filePath)
+        private readonly int _maxFileSize;
+
+        public ZipFileWalker(int maxFileSize)
+        {
+            _maxFileSize = maxFileSize;
+        }
+
+        public IEnumerable<FilePath> GetZippedFiles(FilePath filePath)
         {
             var results = new List<FilePath>();
-            if (!IsZipFile(filePath.Path))
+            if (!filePath.Path.IsZipFile())
             {
                 return results;
             }
@@ -30,7 +37,7 @@ namespace RegexFileSearcher
             return results;
         }
 
-        private static IEnumerable<FilePath> GetCompressedFilesInner(FilePath parentFilePath, Stream zipStream)
+        private IEnumerable<FilePath> GetCompressedFilesInner(FilePath parentFilePath, Stream zipStream)
         {
             var results = new List<FilePath>();
             try
@@ -39,7 +46,7 @@ namespace RegexFileSearcher
                 foreach (ZipEntry zipEntry in GetZipEntries(zipFile))
                 {
                     string zipEntryName = zipEntry.Name;
-                    if (IsZipFile(zipEntryName))
+                    if (zipEntryName.IsZipFile())
                     {
                         Stream entryStream = null;
                         try
@@ -72,21 +79,15 @@ namespace RegexFileSearcher
             return results;
         }
 
-        private static IEnumerable<ZipEntry> GetZipEntries(ZipFile zipFile)
+        private IEnumerable<ZipEntry> GetZipEntries(ZipFile zipFile)
         {
             foreach (ZipEntry zipEntry in zipFile)
             {
-                if (zipEntry.IsFile)
+                if (zipEntry.IsFile && (_maxFileSize == 0 || zipEntry.Size <= _maxFileSize))
                 {
                     yield return zipEntry;
                 }
             }
-        }
-
-        private static bool IsZipFile(string fileName)
-        {
-            string extension = Path.GetExtension(fileName).ToLower();
-            return extension == ".zip";
         }
     }
 }

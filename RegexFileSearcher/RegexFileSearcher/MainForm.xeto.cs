@@ -13,6 +13,8 @@ namespace RegexFileSearcher
 {
     public partial class MainForm : Form
     {
+        private const int FileNameRegexTimeoutInSeconds = 5;
+
         private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();
 
         private CancellationTokenSource _cancellationTokenSource;
@@ -60,7 +62,7 @@ namespace RegexFileSearcher
                 IsMultiline = chkMultiline.Checked ?? false,
                 IsRightToLeft = chkRightToLeft.Checked ?? false,
                 IsSingleLine = chkSingleLine.Checked ?? false,
-                Timeout = (int)nudTimeout.Value
+                TimeoutInSeconds = FileNameRegexTimeoutInSeconds
             }.Regex;
 
         private Regex ContentRegex =>
@@ -77,7 +79,7 @@ namespace RegexFileSearcher
                 IsMultiline = chkContentMultiline.Checked ?? false,
                 IsRightToLeft = chkContentRightToLeft.Checked ?? false,
                 IsSingleLine = chkContentSingleLine.Checked ?? false,
-                Timeout = (int)nudContentTimeout.Value
+                TimeoutInSeconds = (int)nudContentTimeout.Value
             }.Regex;
 
         private RegexSearcher CreateNewSearcher()
@@ -85,6 +87,7 @@ namespace RegexFileSearcher
             return new RegexSearcher(fpSearchPath.FilePath,
                                      SearchDepth,
                                      chkSearchInZipFiles.Checked ?? false,
+                                     (int)nudMaxFileSize.Value * 1024 * 1024,
                                      FileNameRegex,
                                      ContentRegex,
                                      _itemCollection,
