@@ -4,7 +4,9 @@ Cross-platform regex file searching tool in .NET Core.
 
 **Protip**: use the [RegexTestBench](https://github.com/CommonLoon102/RegexTestBench) to test your regexes before using them in this tool.
 
-![](https://github.com/CommonLoon102/RegexFileSearcher/blob/master/image/screenshot.png?raw=true)
+![](https://github.com/CommonLoon102/RegexFileSearcher/blob/master/image/screenshot_windows.png?raw=true)
+
+![](https://github.com/CommonLoon102/RegexFileSearcher/blob/master/image/screenshot_linux.png?raw=true)
 
 Running
 -------
