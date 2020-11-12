@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
-    <Version>1.2.0</Version>
-    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <TargetFrameworks>net5.0-windows</TargetFrameworks>
+    <Version>1.2.1</Version>
+    <AssemblyVersion>1.2.1.0</AssemblyVersion>
     <RepositoryUrl>https://github.com/CommonLoon102/RegexFileSearcher</RepositoryUrl>
     <PackageProjectUrl>https://github.com/CommonLoon102/RegexFileSearcher</PackageProjectUrl>
   </PropertyGroup>

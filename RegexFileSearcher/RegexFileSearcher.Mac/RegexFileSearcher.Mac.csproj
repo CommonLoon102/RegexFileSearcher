@@ -2,7 +2,7 @@
 	
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     
     <RuntimeIdentifiers>osx-x64</RuntimeIdentifiers>
     
@@ -10,9 +10,9 @@
     
     <PackageProjectUrl>https://github.com/CommonLoon102/RegexFileSearcher</PackageProjectUrl>
     
-    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <AssemblyVersion>1.2.1.0</AssemblyVersion>
     
-    <Version>1.2.0</Version>
+    <Version>1.2.1</Version>
   </PropertyGroup>
 	
   <ItemGroup>

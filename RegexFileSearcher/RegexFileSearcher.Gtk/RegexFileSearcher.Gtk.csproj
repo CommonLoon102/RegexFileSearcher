@@ -2,11 +2,11 @@
 	
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFrameworks>netcoreapp3.1</TargetFrameworks>
+    <TargetFrameworks>net5.0</TargetFrameworks>
     <PackageProjectUrl>https://github.com/CommonLoon102/RegexFileSearcher</PackageProjectUrl>
     <RepositoryUrl>https://github.com/CommonLoon102/RegexFileSearcher</RepositoryUrl>
-    <Version>1.2.0</Version>
-    <AssemblyVersion>1.2.0.0</AssemblyVersion>
+    <Version>1.2.1</Version>
+    <AssemblyVersion>1.2.1.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'Default' ">
