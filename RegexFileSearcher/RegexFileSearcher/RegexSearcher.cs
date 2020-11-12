@@ -15,40 +15,40 @@ namespace RegexFileSearcher
         private static readonly EnumerationOptions _options = new EnumerationOptions { IgnoreInaccessible = true };
         private static volatile bool _searchEnded;
 
-        private readonly int _depth;
         private readonly string _searchDirectory;
+        private readonly int _searchDepth;
         private readonly bool _recurseSubdirectories;
         private readonly bool _searchInZipFiles;
         private readonly int _maxFileSize;
         private readonly Regex _fileNameRegex;
         private readonly Regex _contentRegex;
-        private readonly CancellationToken _cancellationToken;
         private readonly TreeGridItemCollection _itemCollection;
+        private readonly CancellationToken _cancellationToken;
         private readonly ZipFileWalker _zipFileWalker;
 
         private string _currentDirectory;
 
-        // Waiting for init-only properties in C# 9
-        public RegexSearcher(string searchDir,
-                             int depth,
+        public RegexSearcher(string searchDirectory,
+                             int searchDepth,
                              bool searchInZipFiles,
                              int maxFileSize,
-                             Regex fileRegex,
+                             Regex fileNameRegex,
                              Regex contentRegex,
                              TreeGridItemCollection itemCollection,
-                             CancellationToken token)
+                             CancellationToken cancellationToken)
         {
-            _searchDirectory = searchDir;
-            _depth = depth;
-            _recurseSubdirectories = depth < 0;
+            _searchDirectory = searchDirectory;
+            _searchDepth = searchDepth;
             _searchInZipFiles = searchInZipFiles;
             _maxFileSize = maxFileSize;
-            _fileNameRegex = fileRegex;
+            _fileNameRegex = fileNameRegex;
             _contentRegex = contentRegex;
             _itemCollection = itemCollection;
-            _cancellationToken = token;
-            _searchEnded = false;
+            _cancellationToken = cancellationToken;
+
+            _recurseSubdirectories = _searchDepth < 0;
             _zipFileWalker = new ZipFileWalker(_maxFileSize);
+            _searchEnded = false;
         }
 
         public string CurrentDirectory
@@ -146,7 +146,7 @@ namespace RegexFileSearcher
 
         private void MatchWith(Action<FilePath> matcher)
         {
-            foreach (var files in EnumerateFiles(_searchDirectory, _depth))
+            foreach (var files in EnumerateFiles(_searchDirectory, _searchDepth))
             {
                 if (_cancellationToken.IsCancellationRequested)
                 {
