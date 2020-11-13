@@ -12,7 +12,7 @@ namespace RegexFileSearcher
 {
     internal class RegexSearcher
     {
-        private static readonly EnumerationOptions _options = new EnumerationOptions { IgnoreInaccessible = true };
+        private static readonly EnumerationOptions _options = new() { IgnoreInaccessible = true };
         private static volatile bool _searchEnded;
 
         private readonly string _searchDirectory;
@@ -47,7 +47,7 @@ namespace RegexFileSearcher
             _cancellationToken = cancellationToken;
 
             _recurseSubdirectories = _searchDepth < 0;
-            _zipFileWalker = new ZipFileWalker(_maxFileSize);
+            _zipFileWalker = new(_maxFileSize);
             _searchEnded = false;
         }
 
@@ -113,7 +113,7 @@ namespace RegexFileSearcher
             }
 
             CurrentDirectory = dir;
-            List<FilePath> filePaths = new List<FilePath>();
+            var filePaths = new List<FilePath>();
             try
             {
                 // Although   IgnoreInaccessible  is  true  by  default,

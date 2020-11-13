@@ -11,10 +11,10 @@ namespace RegexFileSearcher
 
         public SearchResultEntry()
         {
-            base.Values = new object[numberOfColumns];
+            Values = new object[numberOfColumns];
             IsSelected = false;
             Matches = 0;
-            FilePath = new FilePath(null);
+            FilePath = new(path: null);
         }
 
         public bool IsSelected

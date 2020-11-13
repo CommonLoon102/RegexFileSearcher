@@ -24,7 +24,7 @@ namespace RegexFileSearcher
 
         public string GetFileContent()
         {
-            if (Parent == null)
+            if (Parent is null)
             {
                 return File.OpenText(Path).ReadToEnd();
             }
@@ -36,20 +36,20 @@ namespace RegexFileSearcher
             return GetFileContent(archive, reversedFilePath.Parent);
         }
 
-        private FilePath GetReversedFilePath(FilePath filePath)
+        private static FilePath GetReversedFilePath(FilePath filePath)
         {
-            List<string> pathList = new List<string>();
-            while (filePath != null)
+            var pathList = new List<string>();
+            while (filePath is not null)
             {
                 pathList.Add(filePath.Path);
                 filePath = filePath.Parent;
             }
 
             pathList.Reverse();
-            List<FilePath> filePaths = new List<FilePath>(pathList.Count);
+            var filePaths = new List<FilePath>(pathList.Count);
             for (int i = 0; i < pathList.Count; i++)
             {
-                filePaths.Add(new FilePath(pathList[i]));
+                filePaths.Add(new(pathList[i]));
             }
 
             for (int i = 0; i < pathList.Count - 1; i++)
@@ -63,7 +63,7 @@ namespace RegexFileSearcher
         private string GetFileContent(ZipFile zipFile, FilePath parent)
         {
             using Stream stream = zipFile.GetInputStream(zipFile.GetEntry(parent.Path));
-            if (parent.Parent == null)
+            if (parent.Parent is null)
             {
                 TextReader tr = new StreamReader(stream);
                 return tr.ReadToEnd();
@@ -78,7 +78,7 @@ namespace RegexFileSearcher
         }
 
         private string GetFullPath(FilePath filePath)
-            => filePath.Parent == null ?
+            => filePath.Parent is null ?
                 filePath.Path
                 : System.IO.Path.Combine(GetFullPath(filePath.Parent), filePath.Path);
 

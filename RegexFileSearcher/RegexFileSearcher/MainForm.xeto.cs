@@ -15,7 +15,7 @@ namespace RegexFileSearcher
     {
         private const int FileNameRegexTimeoutInSeconds = 5;
 
-        private readonly TreeGridItemCollection _itemCollection = new TreeGridItemCollection();
+        private readonly TreeGridItemCollection _itemCollection = new();
 
         private CancellationTokenSource _cancellationTokenSource;
         private Timer _updateTimer;
@@ -52,9 +52,8 @@ namespace RegexFileSearcher
 
         private Regex FileNameRegex =>
             string.IsNullOrEmpty(txtFileNameRegex.Text)
-            ? null : new RegexPattern
+            ? null : new RegexPattern(txtFileNameRegex.Text)
             {
-                Pattern = txtFileNameRegex.Text,
                 IsCompiled = chkCompiled.Checked ?? false,
                 IsCultureInvariant = chkCultureInvariant.Checked ?? false,
                 IsEcmaScript = chkEcmaScript.Checked ?? false,
@@ -69,9 +68,8 @@ namespace RegexFileSearcher
 
         private Regex ContentRegex =>
             string.IsNullOrEmpty(txtContentRegex.Text)
-            ? null : new RegexPattern
+            ? null : new RegexPattern(txtContentRegex.Text)
             {
-                Pattern = txtContentRegex.Text,
                 IsCompiled = chkContentCompiled.Checked ?? false,
                 IsCultureInvariant = chkContentCultureInvariant.Checked ?? false,
                 IsEcmaScript = chkContentEcmaScript.Checked ?? false,
@@ -84,17 +82,14 @@ namespace RegexFileSearcher
                 TimeoutInSeconds = (int)nudContentTimeout.Value
             }.Regex;
 
-        private RegexSearcher CreateNewSearcher()
-        {
-            return new RegexSearcher(fpSearchPath.FilePath,
-                                     SearchDepth,
-                                     chkSearchInZipFiles.Checked ?? false,
-                                     (int)nudMaxFileSize.Value * 1024 * 1024,
-                                     FileNameRegex,
-                                     ContentRegex,
-                                     _itemCollection,
-                                     _cancellationTokenSource.Token);
-        }
+        private RegexSearcher CreateNewSearcher() => new(fpSearchPath.FilePath,
+            SearchDepth,
+            chkSearchInZipFiles.Checked ?? false,
+            (int)nudMaxFileSize.Value * 1024 * 1024,
+            FileNameRegex,
+            ContentRegex,
+            _itemCollection,
+            _cancellationTokenSource.Token);
 
         private void InitializeSubdirectoryPicker()
         {
@@ -120,7 +115,7 @@ namespace RegexFileSearcher
                 CreateCell = e => new LinkButton
                 {
                     Text = "Open",
-                    Command = new Command((o, ea) => HandleOpenItem(e.Item))
+                    Command = new Command((_, _) => HandleOpenItem(e.Item))
                 }
             };
 
@@ -145,7 +140,7 @@ namespace RegexFileSearcher
 
         private void OpenInEditor(FilePath path)
         {
-            string pathToOpen = path.Parent == null ? path.Path : GetTempPath(path);
+            string pathToOpen = path.Parent is null ? path.Path : GetTempPath(path);
 
             if (!string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
             {
@@ -201,7 +196,7 @@ namespace RegexFileSearcher
             txtFileNameRegex.Enabled = false;
             txtContentRegex.Enabled = false;
 
-            _cancellationTokenSource = new CancellationTokenSource();
+            _cancellationTokenSource = new();
             RegexSearcher searcher = CreateNewSearcher();
             searcher.SearchEnded += EndSearch;
             searcher.CurrentDirectoryChanged += UpdateStatusLabel;
@@ -211,7 +206,7 @@ namespace RegexFileSearcher
                                   TaskCreationOptions.LongRunning,
                                   TaskScheduler.Default);
 
-            _updateTimer = new Timer(state => UpdateResultExplorer(),
+            _updateTimer = new(state => UpdateResultExplorer(),
                 state: null,
                 dueTime: 0,
                 period: (int)TimeSpan.FromSeconds(1).TotalMilliseconds);
@@ -290,7 +285,7 @@ namespace RegexFileSearcher
 
         private void HandleOpenSelected(object sender, EventArgs e)
         {
-            List<FilePath> filesToOpen = new List<FilePath>();
+            var filesToOpen = new List<FilePath>();
             foreach (SearchResultEntry entry in _itemCollection)
             {
                 if (entry.IsSelected)
