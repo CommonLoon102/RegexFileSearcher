@@ -12,13 +12,13 @@ namespace RegexFileSearcher
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                _defaultFileHandler = new ProcessStartInfo { FileName = "xdg-open" };
+                _defaultFileHandler = new() { FileName = "xdg-open" };
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 _arguments = "/C start \"\" ";
-                _defaultFileHandler = new ProcessStartInfo
+                _defaultFileHandler = new()
                 {
                     FileName = "cmd.exe",
                     Arguments = _arguments,
@@ -29,13 +29,13 @@ namespace RegexFileSearcher
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                _defaultFileHandler = new ProcessStartInfo { FileName = "open" };
+                _defaultFileHandler = new() { FileName = "open" };
             }
         }
 
         public static void Open(string path)
         {
-            if (_defaultFileHandler == null)
+            if (_defaultFileHandler is null)
             {
                 throw new FileHandlerException("No editor has been specified.");
             }

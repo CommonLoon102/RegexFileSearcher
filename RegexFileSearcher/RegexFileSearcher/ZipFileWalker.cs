@@ -58,7 +58,7 @@ namespace RegexFileSearcher
                             // zipFile.GetInputStream() related exceptions
                         }
 
-                        if (entryStream != null)
+                        if (entryStream is not null)
                         {
                             var filePath = new FilePath(zipEntryName, parentFilePath);
                             foreach (FilePath compressedFile in GetCompressedFilesInner(filePath, entryStream))
@@ -69,7 +69,7 @@ namespace RegexFileSearcher
                     }
                     else
                     {
-                        results.Add(new FilePath(zipEntryName, parentFilePath));
+                        results.Add(new(zipEntryName, parentFilePath));
                     }
                 }
             }

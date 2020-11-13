@@ -5,19 +5,32 @@ namespace RegexFileSearcher
 {
     internal class RegexPattern
     {
-        public string Pattern { get; set; }
-        public bool IsCompiled { get; set; }
-        public bool IsIgnoreCase { get; set; }
-        public bool IsMultiline { get; set; }
-        public bool IsExplicitCapture { get; set; }
-        public bool IsEcmaScript { get; set; }
-        public bool IsIgnoreWhite { get; set; }
-        public bool IsSingleLine { get; set; }
-        public bool IsRightToLeft { get; set; }
-        public bool IsCultureInvariant { get; set; }
-        public int TimeoutInSeconds { get; set; }
+        private readonly string _pattern;
 
-        public Regex Regex => new Regex(Pattern, RegexOptions, TimeSpan.FromSeconds(TimeoutInSeconds));
+        public RegexPattern(string pattern)
+        {
+            if (string.IsNullOrEmpty(pattern))
+                throw new ArgumentException($"The parameter '{nameof(pattern)}' must not be null or empty string.", nameof(pattern));
+
+            _pattern = pattern;
+        }
+
+        public bool IsCompiled { get; init; }
+        public bool IsIgnoreCase { get; init; }
+        public bool IsMultiline { get; init; }
+        public bool IsExplicitCapture { get; init; }
+        public bool IsEcmaScript { get; init; }
+        public bool IsIgnoreWhite { get; init; }
+        public bool IsSingleLine { get; init; }
+        public bool IsRightToLeft { get; init; }
+        public bool IsCultureInvariant { get; init; }
+        public int? TimeoutInSeconds { get; init; }
+
+        public Regex Regex => new(_pattern,
+            RegexOptions,
+            TimeoutInSeconds is not null ?
+                TimeSpan.FromSeconds(TimeoutInSeconds.Value)
+                : Regex.InfiniteMatchTimeout);
 
         private RegexOptions RegexOptions
         {
