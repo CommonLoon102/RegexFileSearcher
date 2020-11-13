@@ -8,7 +8,7 @@
     <RepositoryUrl>https://github.com/CommonLoon102/RegexFileSearcher</RepositoryUrl>
     <PackageProjectUrl>https://github.com/CommonLoon102/RegexFileSearcher</PackageProjectUrl>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <ProjectReference Include="..\RegexFileSearcher\RegexFileSearcher.csproj" />
   </ItemGroup>
