@@ -7,12 +7,7 @@ namespace RegexFileSearcher
 {
     internal class ZipFileWalker
     {
-        private readonly int _maxFileSize;
-
-        public ZipFileWalker(int maxFileSize)
-        {
-            _maxFileSize = maxFileSize;
-        }
+        public int MaxFileSize { get; init; }
 
         public IEnumerable<FilePath> GetZippedFiles(FilePath filePath)
         {
@@ -83,7 +78,7 @@ namespace RegexFileSearcher
         {
             foreach (ZipEntry zipEntry in zipFile)
             {
-                if (zipEntry.IsFile && (_maxFileSize == 0 || zipEntry.Size <= _maxFileSize))
+                if (zipEntry.IsFile && (MaxFileSize == 0 || zipEntry.Size <= MaxFileSize))
                 {
                     yield return zipEntry;
                 }

@@ -83,13 +83,15 @@ namespace RegexFileSearcher
             }.Regex;
 
         private RegexSearcher CreateNewSearcher() => new(fpSearchPath.FilePath,
-            SearchDepth,
-            chkSearchInZipFiles.Checked ?? false,
-            (int)nudMaxFileSize.Value * 1024 * 1024,
             FileNameRegex,
             ContentRegex,
             _itemCollection,
-            _cancellationTokenSource.Token);
+            _cancellationTokenSource.Token)
+        {
+            SearchDepth = SearchDepth,
+            SearchInZipFiles = chkSearchInZipFiles.Checked ?? false,
+            MaxFileSize = (int)nudMaxFileSize.Value * 1024 * 1024
+        };
 
         private void InitializeSubdirectoryPicker()
         {

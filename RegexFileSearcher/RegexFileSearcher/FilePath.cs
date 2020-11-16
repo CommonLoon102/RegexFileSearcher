@@ -9,7 +9,7 @@ namespace RegexFileSearcher
     {
         public FilePath Parent { get; private set; }
 
-        public string Path { get; private set; }
+        public string Path { get; private init; }
 
         public FilePath(string path)
         {
