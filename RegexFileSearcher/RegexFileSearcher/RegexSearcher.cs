@@ -16,40 +16,33 @@ namespace RegexFileSearcher
         private static volatile bool _searchEnded;
 
         private readonly string _searchDirectory;
-        private readonly int _searchDepth;
-        private readonly bool _recurseSubdirectories;
-        private readonly bool _searchInZipFiles;
-        private readonly int _maxFileSize;
         private readonly Regex _fileNameRegex;
         private readonly Regex _contentRegex;
         private readonly TreeGridItemCollection _itemCollection;
         private readonly CancellationToken _cancellationToken;
-        private readonly ZipFileWalker _zipFileWalker;
 
         private string _currentDirectory;
 
         public RegexSearcher(string searchDirectory,
-                             int searchDepth,
-                             bool searchInZipFiles,
-                             int maxFileSize,
                              Regex fileNameRegex,
                              Regex contentRegex,
                              TreeGridItemCollection itemCollection,
                              CancellationToken cancellationToken)
         {
             _searchDirectory = searchDirectory;
-            _searchDepth = searchDepth;
-            _searchInZipFiles = searchInZipFiles;
-            _maxFileSize = maxFileSize;
             _fileNameRegex = fileNameRegex;
             _contentRegex = contentRegex;
             _itemCollection = itemCollection;
             _cancellationToken = cancellationToken;
 
-            _recurseSubdirectories = _searchDepth < 0;
-            _zipFileWalker = new(_maxFileSize);
             _searchEnded = false;
         }
+
+        public int SearchDepth { get; init; }
+
+        public bool SearchInZipFiles { get; init; }
+
+        public int MaxFileSize { get; init; }
 
         public string CurrentDirectory
         {
@@ -63,6 +56,8 @@ namespace RegexFileSearcher
                 }
             }
         }
+
+        private bool RecurseSubdirectories => SearchDepth < 0;
 
         public event Action<bool> SearchEnded;
         public event Action<string> CurrentDirectoryChanged;
@@ -107,7 +102,7 @@ namespace RegexFileSearcher
 
         private IEnumerable<IEnumerable<FilePath>> EnumerateFiles(string dir, int currentDepth)
         {
-            if (!_recurseSubdirectories && currentDepth < 0)
+            if (!RecurseSubdirectories && currentDepth < 0)
             {
                 yield break;
             }
@@ -119,7 +114,7 @@ namespace RegexFileSearcher
                 // Although   IgnoreInaccessible  is  true  by  default,
                 // it only applies when you use the 3 parameter overload
                 filePaths.AddRange(new DirectoryInfo(dir).EnumerateFiles("*", _options)
-                    .Where(fi => fi.Name.IsZipFile() || _maxFileSize == 0 || fi.Length <= _maxFileSize)
+                    .Where(fi => fi.Name.IsZipFile() || MaxFileSize == 0 || fi.Length <= MaxFileSize)
                     .Select(fi => new FilePath(fi.FullName)));
             }
             catch
@@ -135,18 +130,18 @@ namespace RegexFileSearcher
                 yield return EnumerateFiles(subDir, currentDepth - 1).SelectMany(f => f);
             }
 
-            if (_searchInZipFiles)
+            if (SearchInZipFiles)
             {
                 foreach (FilePath filePath in filePaths)
                 {
-                    yield return _zipFileWalker.GetZippedFiles(filePath);
+                    yield return new ZipFileWalker { MaxFileSize = MaxFileSize }.GetZippedFiles(filePath);
                 }
             }
         }
 
         private void MatchWith(Action<FilePath> matcher)
         {
-            foreach (var files in EnumerateFiles(_searchDirectory, _searchDepth))
+            foreach (var files in EnumerateFiles(_searchDirectory, SearchDepth))
             {
                 if (_cancellationToken.IsCancellationRequested)
                 {
@@ -224,7 +219,7 @@ namespace RegexFileSearcher
             {
                 if (!_searchEnded)
                 {
-                    _itemCollection.Add(new SearchResultEntry { Matches = count, FilePath = filePath });
+                    _itemCollection.Add(new SearchResultEntry(count, filePath));
                 }
             }
         }

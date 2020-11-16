@@ -9,12 +9,12 @@ namespace RegexFileSearcher
         private const int pathColumnNumber = 3;
         private const int numberOfColumns = 4;
 
-        public SearchResultEntry()
+        public SearchResultEntry(int matches, FilePath filePath)
         {
             Values = new object[numberOfColumns];
             IsSelected = false;
-            Matches = 0;
-            FilePath = new(path: null);
+            Matches = matches;
+            FilePath = filePath;
         }
 
         public bool IsSelected
@@ -26,13 +26,13 @@ namespace RegexFileSearcher
         public int Matches
         {
             get => (int)Values[matchesColumnNumber];
-            set => Values[matchesColumnNumber] = value;
+            private init => Values[matchesColumnNumber] = value;
         }
 
         public FilePath FilePath
         {
             get => (FilePath)Values[pathColumnNumber];
-            set => Values[pathColumnNumber] = value;
+            private init => Values[pathColumnNumber] = value;
         }
     }
 }
