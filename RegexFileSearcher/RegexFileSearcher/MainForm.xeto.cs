@@ -144,20 +144,20 @@ namespace RegexFileSearcher
         {
             string pathToOpen = path.Parent is null ? path.Path : GetTempPath(path);
 
-            if (!string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
+            try
             {
-                Process.Start(fpOpenWith.FilePath.Trim(), pathToOpen);
-            }
-            else
-            {
-                try
+                if (!string.IsNullOrWhiteSpace(fpOpenWith.FilePath))
+                {
+                    Process.Start(fpOpenWith.FilePath.Trim(), pathToOpen);
+                }
+                else
                 {
                     FileHandler.Open(pathToOpen);
                 }
-                catch (FileHandlerException ex)
-                {
-                    MessageBox.Show(ex.Message, "Cannot open", MessageBoxType.Information);
-                }
+            }
+            catch (FileHandlerException ex)
+            {
+                MessageBox.Show(ex.Message, "Cannot open", MessageBoxType.Information);
             }
         }
 
