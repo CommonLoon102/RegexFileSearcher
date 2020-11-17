@@ -10,7 +10,9 @@ namespace RegexFileSearcher
         public RegexPattern(string pattern)
         {
             if (string.IsNullOrEmpty(pattern))
+            {
                 throw new ArgumentException($"The parameter '{nameof(pattern)}' must not be null or empty string.", nameof(pattern));
+            }
 
             _pattern = pattern;
         }
@@ -26,10 +28,11 @@ namespace RegexFileSearcher
         public bool IsCultureInvariant { get; init; }
         public int? TimeoutInSeconds { get; init; }
 
-        public Regex Regex => new(_pattern,
-            RegexOptions,
-            TimeoutInSeconds is not null ?
-                TimeSpan.FromSeconds(TimeoutInSeconds.Value)
+        public Regex Regex =>
+            new(_pattern,
+                RegexOptions,
+                TimeoutInSeconds is not null
+                ? TimeSpan.FromSeconds(TimeoutInSeconds.Value)
                 : Regex.InfiniteMatchTimeout);
 
         private RegexOptions RegexOptions

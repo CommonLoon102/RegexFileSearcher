@@ -24,10 +24,10 @@ namespace RegexFileSearcher
         private string _currentDirectory;
 
         public RegexSearcher(string searchDirectory,
-                             Regex fileNameRegex,
-                             Regex contentRegex,
-                             TreeGridItemCollection itemCollection,
-                             CancellationToken cancellationToken)
+            Regex fileNameRegex,
+            Regex contentRegex,
+            TreeGridItemCollection itemCollection,
+            CancellationToken cancellationToken)
         {
             _searchDirectory = searchDirectory;
             _fileNameRegex = fileNameRegex;
@@ -113,7 +113,8 @@ namespace RegexFileSearcher
             {
                 // Although   IgnoreInaccessible  is  true  by  default,
                 // it only applies when you use the 3 parameter overload
-                filePaths.AddRange(new DirectoryInfo(dir).EnumerateFiles("*", _options)
+                filePaths.AddRange(new DirectoryInfo(dir)
+                    .EnumerateFiles("*", _options)
                     .Where(fi => fi.Name.IsZipFile() || MaxFileSize == 0 || fi.Length <= MaxFileSize)
                     .Select(fi => new FilePath(fi.FullName)));
             }

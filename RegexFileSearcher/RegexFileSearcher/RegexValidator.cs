@@ -7,7 +7,7 @@ namespace RegexFileSearcher
     {
         public static bool IsRegexValid(string pattern, out string errorMessage)
         {
-            errorMessage = "";
+            errorMessage = null;
             try
             {
                 Regex.IsMatch("", pattern);
