@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using IOPath = System.IO.Path;
 
 namespace RegexFileSearcher
 {
@@ -77,10 +78,10 @@ namespace RegexFileSearcher
             }
         }
 
-        private string GetFullPath(FilePath filePath)
-            => filePath.Parent is null ?
-                filePath.Path
-                : System.IO.Path.Combine(GetFullPath(filePath.Parent), filePath.Path);
+        private string GetFullPath(FilePath filePath) =>
+            filePath.Parent is null
+            ? filePath.Path
+            : IOPath.Combine(GetFullPath(filePath.Parent), filePath.Path);
 
         #region IConvertible members
         public TypeCode GetTypeCode()

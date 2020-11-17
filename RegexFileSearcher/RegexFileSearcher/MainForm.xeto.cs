@@ -23,7 +23,8 @@ namespace RegexFileSearcher
         private bool _matchNumberOrdering;
         private volatile bool _searchEnded = true;
 
-        public MainForm() : this(initializeControls: true)
+        public MainForm()
+            : this(initializeControls: true)
         {
             InitializeSubdirectoryPicker();
             InitializeResultExplorer();
@@ -52,7 +53,8 @@ namespace RegexFileSearcher
 
         private Regex FileNameRegex =>
             string.IsNullOrEmpty(txtFileNameRegex.Text)
-            ? null : new RegexPattern(txtFileNameRegex.Text)
+            ? null
+            : new RegexPattern(txtFileNameRegex.Text)
             {
                 IsCompiled = chkCompiled.Checked ?? false,
                 IsCultureInvariant = chkCultureInvariant.Checked ?? false,
@@ -68,7 +70,8 @@ namespace RegexFileSearcher
 
         private Regex ContentRegex =>
             string.IsNullOrEmpty(txtContentRegex.Text)
-            ? null : new RegexPattern(txtContentRegex.Text)
+            ? null
+            : new RegexPattern(txtContentRegex.Text)
             {
                 IsCompiled = chkContentCompiled.Checked ?? false,
                 IsCultureInvariant = chkContentCultureInvariant.Checked ?? false,
@@ -82,11 +85,12 @@ namespace RegexFileSearcher
                 TimeoutInSeconds = (int)nudContentTimeout.Value
             }.Regex;
 
-        private RegexSearcher CreateNewSearcher() => new(fpSearchPath.FilePath,
-            FileNameRegex,
-            ContentRegex,
-            _itemCollection,
-            _cancellationTokenSource.Token)
+        private RegexSearcher CreateNewSearcher() =>
+            new(fpSearchPath.FilePath,
+                FileNameRegex,
+                ContentRegex,
+                _itemCollection,
+                _cancellationTokenSource.Token)
         {
             SearchDepth = SearchDepth,
             SearchInZipFiles = chkSearchInZipFiles.Checked ?? false,
@@ -161,7 +165,7 @@ namespace RegexFileSearcher
             }
         }
 
-        private string GetTempPath(FilePath path)
+        private static string GetTempPath(FilePath path)
         {
             string tempFileName = Path.GetFileNameWithoutExtension(Path.GetTempFileName());
             tempFileName += Path.GetExtension(path.Path);
@@ -178,8 +182,11 @@ namespace RegexFileSearcher
                 return;
             }
 
-            if (MessageBox.Show("Are you sure you want to stop the search?", "Question",
-                MessageBoxButtons.YesNo, MessageBoxType.Question, MessageBoxDefaultButton.No) == DialogResult.Yes)
+            if (MessageBox.Show("Are you sure you want to stop the search?",
+                "Question",
+                MessageBoxButtons.YesNo,
+                MessageBoxType.Question,
+                MessageBoxDefaultButton.No) == DialogResult.Yes)
             {
                 EndSearch();
             }
@@ -204,9 +211,9 @@ namespace RegexFileSearcher
             searcher.CurrentDirectoryChanged += UpdateStatusLabel;
 
             Task.Factory.StartNew(searcher.StartSearch,
-                                  _cancellationTokenSource.Token,
-                                  TaskCreationOptions.LongRunning,
-                                  TaskScheduler.Default);
+                _cancellationTokenSource.Token,
+                TaskCreationOptions.LongRunning,
+                TaskScheduler.Default);
 
             _updateTimer = new(state => UpdateResultExplorer(),
                 state: null,
