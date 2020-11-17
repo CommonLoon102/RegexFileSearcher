@@ -1,6 +1,6 @@
 RegexFileSearcher
 =================
-Cross-platform regex file searching tool in .NET Core.
+Cross-platform regex file searching tool in .NET 5.
 
 **Protip**: use the [RegexTestBench](https://github.com/CommonLoon102/RegexTestBench) to test your regexes before using them in this tool.
 
