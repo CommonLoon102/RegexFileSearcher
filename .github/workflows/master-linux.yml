@@ -33,10 +33,6 @@ jobs:
       # This cheap hack is needed because of a build environment "bug": https://github.com/actions/setup-dotnet/issues/155
       - name: Clean
         run: dotnet clean && dotnet nuget locals all --clear
-        
-      # Hack part 2
-      - name: Add NuGet source
-        run: dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org --configfile $env:APPDATA\NuGet\NuGet.Config
           
       - name: Publish
         run: dotnet publish RegexFileSearcher/RegexFileSearcher.Gtk/RegexFileSearcher.Gtk.csproj --configuration Release --output publish --self-contained true -p:PublishSingleFile=true --runtime linux-x64 --framework net5.0
