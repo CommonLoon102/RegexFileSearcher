@@ -20,7 +20,8 @@ jobs:
             project: Wpf,
             runtime: win-x86,
             framework: net5.0-windows,
-            build_type: Release
+            build_type: Release,
+            is_single_file: "false"
           }
         - {
             name: Linux,
@@ -28,7 +29,8 @@ jobs:
             project: Gtk,
             runtime: linux-x64,
             framework: net5.0,
-            build_type: Release
+            build_type: Release,
+            is_single_file: "true"
           }
         - {
             name: macOS,
@@ -36,7 +38,8 @@ jobs:
             project: Mac,
             runtime: osx-x64,
             framework: net5.0,
-            build_type: "Release"
+            build_type: Release,
+            is_single_file: "true"
           }
 
     steps:
@@ -52,7 +55,7 @@ jobs:
         run: dotnet clean && dotnet nuget locals all --clear
 
       - name: Publish
-        run: dotnet publish RegexFileSearcher/RegexFileSearcher.${{ matrix.config.project }}/RegexFileSearcher.${{ matrix.config.project }}.csproj --configuration ${{ matrix.config.build_type }} --output publish --self-contained true -p:PublishSingleFile=true --runtime ${{ matrix.config.runtime }} --framework ${{ matrix.config.framework }}
+        run: dotnet publish RegexFileSearcher/RegexFileSearcher.${{ matrix.config.project }}/RegexFileSearcher.${{ matrix.config.project }}.csproj --configuration ${{ matrix.config.build_type }} --output publish --self-contained true -p:PublishSingleFile=${{ matrix.config.is_single_file }} --runtime ${{ matrix.config.runtime }} --framework ${{ matrix.config.framework }}
 
       - uses: actions/upload-artifact@v2
         with:
