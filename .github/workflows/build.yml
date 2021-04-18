@@ -59,10 +59,24 @@ jobs:
       - name: Publish
         run: dotnet publish ${{ env.app_name }}/${{ env.app_name }}.${{ matrix.config.project }}/${{ env.app_name }}.${{ matrix.config.project }}.csproj --configuration Release --output publish --self-contained true -p:PublishSingleFile=${{ matrix.config.is_single_file }} --runtime ${{ matrix.config.runtime }} --framework ${{ matrix.config.framework }}
 
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+
+      - name: Create Package
+        shell: bash
+        run: |
+            filename=${{ env.app_name }}-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.runtime }}
+            if [[ "${{ runner.os }}" == 'Windows' ]]; then
+              7z a $filename.zip ./publish/*
+            else
+              zip --junk-paths $filename ./publish/*
+            fi
+
       - uses: actions/upload-artifact@v2
         with:
-            path: publish
             name: ${{ matrix.config.runtime }} Release
+            path: ${{ env.app_name }}-${{ matrix.config.runtime }}.zip
 
       - name: List Build Directory
         if: always()
