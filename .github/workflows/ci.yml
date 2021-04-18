@@ -1,0 +1,67 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    name: ${{ matrix.config.name }} | ${{ matrix.config.build_type }}
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+        - {
+            name: Windows,
+            os: windows-latest,
+            project: Wpf,
+            runtime: win-x86,
+            framework: net5.0-windows,
+            build_type: Release
+          }
+        - {
+            name: Linux,
+            os: ubuntu-latest,
+            project: Gtk,
+            runtime: linux-x64,
+            framework: net5.0,
+            build_type: Release
+          }
+        - {
+            name: macOS,
+            os: macos-latest,
+            project: Mac,
+            runtime: osx-x64,
+            framework: net5.0,
+            build_type: "Release"
+          }
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup .NET Core SDK
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 5.0.x
+         
+      # This cheap hack is needed because of a build environment "bug": https://github.com/actions/setup-dotnet/issues/155
+      - name: Clean
+        run: dotnet clean && dotnet nuget locals all --clear
+
+      - name: Publish
+        run: dotnet publish RegexFileSearcher/RegexFileSearcher.${{ matrix.config.project }}/RegexFileSearcher.${{ matrix.config.project }}.csproj --configuration ${{ matrix.config.build_type }} --output publish --self-contained true -p:PublishSingleFile=true --runtime ${{ matrix.config.runtime }} --framework ${{ matrix.config.framework }}
+
+      - uses: actions/upload-artifact@v2
+        with:
+            path: publish
+            name: ${{ matrix.config.name }} ${{ matrix.config.build_type }}
+
+      - name: List Build Directory
+        if: always()
+        shell: bash
+        run: |
+          git status
+          ls -lR publish
