@@ -58,7 +58,7 @@ jobs:
         shell: bash
         run: |
           git status
-          ls -lR build
+          ls -lR publish
 
       - name: Create Package
         shell: bash
