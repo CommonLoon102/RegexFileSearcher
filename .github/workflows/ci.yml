@@ -1,11 +1,11 @@
 name: Continuous Integration
 
 on:
+  workflow_dispatch:
   push:
     branches: [ master, gh-wf ]
   pull_request:
     branches: [ master ]
-  workflow_dispatch:
 
 jobs:
   build:
