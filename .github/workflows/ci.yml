@@ -5,6 +5,7 @@ on:
     branches: [ master, gh-wf ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -65,3 +66,39 @@ jobs:
         run: |
           git status
           ls -lR publish
+
+      - name: Create Package
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+            if [[ "${{ runner.os }}" == 'Windows' ]]; then
+              7z a RegexFileSearcher-${{ matrix.config.runtime }}.zip ./publish/*
+            else
+              zip --junk-paths RegexFileSearcher-${{ matrix.config.runtime }} ./publish/*
+            fi
+
+      - name: Create Release
+        id: create_release
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/create-release@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+            tag_name: 1.2.1-${{ matrix.config.runtime }}-autobuild-2021-apr-18-001
+            release_name: RegexFileSearcher 1.2.1 ${{ matrix.config.runtime }}
+            body: |
+                RegexFileSearcher 1.2.1 built on GitHub servers.
+            draft: false
+            prerelease: false
+
+      - name: Upload Release Asset
+        id: upload-release-asset
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-release-asset@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+            upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps 
+            asset_path: ./RegexFileSearcher-${{ matrix.config.runtime }}.zip
+            asset_name: RegexFileSearcher-${{ matrix.config.runtime }}.zip
+            asset_content_type: application/zip
