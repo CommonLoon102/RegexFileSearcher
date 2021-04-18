@@ -57,7 +57,7 @@ jobs:
         run: dotnet clean && dotnet nuget locals all --clear
 
       - name: Publish
-        run: dotnet publish ${{ env.app_name }}/${{ env.app_name }}.${{ matrix.config.project }}/${{ env.app_name }}.${{ matrix.config.project }}.csproj --configuration ${{ env.build_type }} --output publish --self-contained true -p:PublishSingleFile=${{ matrix.config.is_single_file }} --runtime ${{ matrix.config.runtime }} --framework ${{ matrix.config.framework }}
+        run: dotnet publish ${{ env.app_name }}/${{ env.app_name }}.${{ matrix.config.project }}/${{ env.app_name }}.${{ matrix.config.project }}.csproj --configuration Release --output publish --self-contained true -p:PublishSingleFile=${{ matrix.config.is_single_file }} --runtime ${{ matrix.config.runtime }} --framework ${{ matrix.config.framework }}
 
       - uses: actions/upload-artifact@v2
         with:
