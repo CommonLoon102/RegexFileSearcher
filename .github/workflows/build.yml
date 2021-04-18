@@ -9,12 +9,11 @@ on:
     types: [ published ]
 
 env:
-  app_name: "RegexFileSearcher"
-  build_type: "Release"
+  app_name: RegexFileSearcher
 
 jobs:
   build:
-    name: ${{ matrix.config.name }} | ${{ env.build_type }}
+    name: ${{ matrix.config.name }} | Release
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
@@ -63,7 +62,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
             path: publish
-            name: ${{ matrix.config.runtime }} ${{ env.build_type }}
+            name: ${{ matrix.config.runtime }} Release
 
       - name: List Build Directory
         if: always()
@@ -103,7 +102,7 @@ jobs:
       - name: Download extension artifacts
         uses: actions/download-artifact@v2
         with:
-          name: ${{ matrix.config.runtime }} ${{ env.build_type }}
+          name: ${{ matrix.config.runtime }} Release
 
       - name:  Upload Release Assets
         uses: actions/upload-release-asset@v1
