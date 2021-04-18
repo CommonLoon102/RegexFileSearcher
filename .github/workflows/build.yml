@@ -60,16 +60,17 @@ jobs:
       - name: Publish
         run: dotnet publish ${{ env.app_name }}/${{ env.app_name }}.${{ matrix.config.project }}/${{ env.app_name }}.${{ matrix.config.project }}.csproj --configuration Release --output ${{ env.publish_folder }} --self-contained true -p:PublishSingleFile=${{ matrix.config.is_single_file }} --runtime ${{ matrix.config.runtime }} --framework ${{ matrix.config.framework }}
 
-      - name: Get the version
-        id: get_version
+      - name: Get the tag name
+        id: get_tag_name
         if: (github.event_name == 'release' && github.event.action == 'published' && startsWith(github.ref, 'refs/tags/'))
-        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+        shell: bash
+        run: echo "::set-output name=TAG_NAME::$(git describe --tags --abbrev=0)"
 
       - name: Create Package
         if: (github.event_name == 'release' && github.event.action == 'published' && startsWith(github.ref, 'refs/tags/'))
         shell: bash
         run: |
-            filename=${{ env.app_name }}-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.runtime }}
+            filename=${{ env.app_name }}-${{ steps.get_tag_name.outputs.TAG_NAME }}-${{ matrix.config.runtime }}
             if [[ "${{ runner.os }}" == 'Windows' ]]; then
               7z a $filename.zip ./${{ env.publish_folder }}/*
             else
@@ -80,7 +81,7 @@ jobs:
         if: (github.event_name == 'release' && github.event.action == 'published' && startsWith(github.ref, 'refs/tags/'))
         with:
             name: ${{ matrix.config.runtime }} Release
-            path: ${{ env.app_name }}-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.runtime }}.zip
+            path: ${{ env.app_name }}-${{ steps.get_tag_name.outputs.TAG_NAME }}-${{ matrix.config.runtime }}.zip
 
       - uses: actions/upload-artifact@v2
         if: (github.event_name == 'push' || github.event_name == 'pull_request')
@@ -113,9 +114,11 @@ jobs:
             runtime: osx-x64
           }
     steps:
-      - name: Get the version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF#refs/tags/}
+      - name: Get the tag name
+        id: get_tag_name
+        if: (github.event_name == 'release' && github.event.action == 'published' && startsWith(github.ref, 'refs/tags/'))
+        shell: bash
+        run: echo "::set-output name=TAG_NAME::$(git describe --tags --abbrev=0)"
 
       - name: Get release
         id: get_release
@@ -134,6 +137,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.get_release.outputs.upload_url }}
-          asset_path: ${{ env.app_name }}-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.runtime }}.zip
-          asset_name: ${{ env.app_name }}-${{ steps.get_version.outputs.VERSION }}-${{ matrix.config.runtime }}.zip
+          asset_path: ${{ env.app_name }}-${{ steps.get_tag_name.outputs.TAG_NAME }}-${{ matrix.config.runtime }}.zip
+          asset_name: ${{ env.app_name }}-${{ steps.get_tag_name.outputs.TAG_NAME }}-${{ matrix.config.runtime }}.zip
           asset_content_type: application/zip
