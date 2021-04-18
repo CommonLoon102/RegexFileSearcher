@@ -47,10 +47,10 @@ jobs:
       # This cheap hack is needed because of a build environment "bug": https://github.com/actions/setup-dotnet/issues/155
       - name: Clean
         run: dotnet clean && dotnet nuget locals all --clear
-          
+
       - name: Publish
         run: dotnet publish RegexFileSearcher/RegexFileSearcher.${{ matrix.config.project }}/RegexFileSearcher.${{ matrix.config.project }}.csproj --configuration ${{ matrix.config.build_type }} --output publish --self-contained true -p:PublishSingleFile=true --runtime ${{ matrix.config.runtime }} --framework ${{ matrix.config.framework }}
-        
+
       - uses: actions/upload-artifact@v2
         with:
             path: publish

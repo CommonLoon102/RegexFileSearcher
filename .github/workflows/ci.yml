@@ -15,30 +15,33 @@ jobs:
       matrix:
         config:
         - {
-            name: "Windows",
+            name: Windows,
             os: windows-latest,
-            project: "Wpf",
+            project: Wpf,
             runtime: win-x86,
-            build_type: "Release"
+            framework: net5.0-windows,
+            build_type: Release
           }
         - {
-            name: "Linux",
+            name: Linux,
             os: ubuntu-latest,
-            project: "Gtk",
+            project: Gtk,
             runtime: linux-x64,
-            build_type: "Release"
+            framework: net5.0,
+            build_type: Release
           }
         - {
-            name: "macOS",
+            name: macOS,
             os: macos-latest,
-            project: "Mac",
+            project: Mac,
             runtime: osx-x64,
+            framework: net5.0,
             build_type: "Release"
           }
 
     steps:
       - uses: actions/checkout@v2
-      
+
       - name: Setup .NET Core SDK
         uses: actions/setup-dotnet@v1.7.2
         with:
@@ -47,10 +50,10 @@ jobs:
       # This cheap hack is needed because of a build environment "bug": https://github.com/actions/setup-dotnet/issues/155
       - name: Clean
         run: dotnet clean && dotnet nuget locals all --clear
-          
+
       - name: Publish
-        run: dotnet publish RegexFileSearcher/RegexFileSearcher.${{ matrix.config.project }}/RegexFileSearcher.${{ matrix.config.project }}.csproj --configuration ${{ matrix.config.build_type }} --output publish --self-contained true -p:PublishSingleFile=true --runtime ${{ matrix.config.runtime }} --framework net5.0
-        
+        run: dotnet publish RegexFileSearcher/RegexFileSearcher.${{ matrix.config.project }}/RegexFileSearcher.${{ matrix.config.project }}.csproj --configuration ${{ matrix.config.build_type }} --output publish --self-contained true -p:PublishSingleFile=true --runtime ${{ matrix.config.runtime }} --framework ${{ matrix.config.framework }}
+
       - uses: actions/upload-artifact@v2
         with:
             path: publish
