@@ -14,7 +14,7 @@ env:
 
 jobs:
   build:
-    name: ${{ matrix.config.name }} | ${{ env.build_type }}
+    name: ${{ matrix.config.name }} | ${{ matrix.config.build_type }}
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
@@ -26,6 +26,7 @@ jobs:
             project: Wpf,
             runtime: win-x86,
             framework: net5.0-windows,
+            build_type: "${{ env.build_type }}",
             is_single_file: "false"
           }
         - {
@@ -34,6 +35,7 @@ jobs:
             project: Gtk,
             runtime: linux-x64,
             framework: net5.0,
+            build_type: "${{ env.build_type }}",
             is_single_file: "true"
           }
         - {
@@ -42,6 +44,7 @@ jobs:
             project: Mac,
             runtime: osx-x64,
             framework: net5.0,
+            build_type: "${{ env.build_type }}",
             is_single_file: "true"
           }
 
