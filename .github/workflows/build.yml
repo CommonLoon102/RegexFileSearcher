@@ -14,7 +14,7 @@ env:
 
 jobs:
   build:
-    name: ${{ matrix.config.name }} | Release
+    name: ${{ matrix.config.name }} | ${{ matrix.config.build_type }}
     runs-on: ${{ matrix.config.os }}
     strategy:
       fail-fast: false
@@ -26,7 +26,8 @@ jobs:
             project: Wpf,
             runtime: win-x86,
             framework: net5.0-windows,
-            is_single_file: "false"
+            is_single_file: "false",
+            build_type: Release
           }
         - {
             name: Linux,
@@ -34,7 +35,8 @@ jobs:
             project: Gtk,
             runtime: linux-x64,
             framework: net5.0,
-            is_single_file: "true"
+            is_single_file: "true",
+            build_type: Release
           }
         - {
             name: macOS,
@@ -42,7 +44,8 @@ jobs:
             project: Mac,
             runtime: osx-x64,
             framework: net5.0,
-            is_single_file: "true"
+            is_single_file: "true",
+            build_type: Release
           }
 
     steps:
@@ -59,7 +62,7 @@ jobs:
 
       - name: Publish
         run: dotnet publish ${{ env.app_name }}/${{ env.app_name }}.${{ matrix.config.project }}/${{ env.app_name }}.${{ matrix.config.project }}.csproj
-          --configuration Release
+          --configuration ${{ matrix.config.build_type }}
           --output ${{ env.publish_folder }}
           --self-contained true
           -p:PublishSingleFile=${{ matrix.config.is_single_file }}
@@ -67,7 +70,6 @@ jobs:
           --framework ${{ matrix.config.framework }}
 
       - name: Create Package
-        if: (github.event_name == 'release' && github.event.action == 'published' && startsWith(github.ref, 'refs/tags/'))
         shell: bash
         run: |
             filename=${{ env.app_name }}-${{ matrix.config.runtime }}
@@ -78,16 +80,9 @@ jobs:
             fi
 
       - uses: actions/upload-artifact@v2
-        if: (github.event_name == 'release' && github.event.action == 'published' && startsWith(github.ref, 'refs/tags/'))
         with:
-            name: ${{ matrix.config.runtime }} Release
+            name: ${{ matrix.config.runtime }} ${{ matrix.config.build_type }}
             path: ${{ env.app_name }}-${{ matrix.config.runtime }}.zip
-
-      - uses: actions/upload-artifact@v2
-        if: (github.event_name == 'push' || github.event_name == 'pull_request')
-        with:
-            name: ${{ matrix.config.runtime }} Release
-            path: ${{ env.publish_folder }}
 
       - name: List Build Directory
         if: always()
@@ -105,13 +100,16 @@ jobs:
       matrix:
         config:
         - {
-            runtime: win-x86
+            runtime: win-x86,
+            build_type: Release
           }
         - {
-            runtime: linux-x64
+            runtime: linux-x64,
+            build_type: Release
           }
         - {
-            runtime: osx-x64
+            runtime: osx-x64,
+            build_type: Release
           }
     steps:
       - name: Get release
@@ -123,7 +121,7 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v2
         with:
-          name: ${{ matrix.config.runtime }} Release
+          name: ${{ matrix.config.runtime }} ${{ matrix.config.build_type }}
 
       - name:  Upload Release Assets
         uses: actions/upload-release-asset@v1
