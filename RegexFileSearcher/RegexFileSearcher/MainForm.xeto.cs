@@ -44,7 +44,9 @@ namespace RegexFileSearcher
             {
                 bool isRegexValid = RegexValidator.IsRegexValid(textBox.Text, out string errorMessage);
                 textBox.ToolTip = isRegexValid ? null : errorMessage;
-                textBox.Parent.Parent.BackgroundColor = isRegexValid ? _defaultPanelBackgroundColor : Colors.LightSalmon;
+                textBox.Parent.Parent.BackgroundColor = isRegexValid
+                    ? _defaultPanelBackgroundColor
+                    : Colors.LightSalmon;
                 return isRegexValid;
             }
         }

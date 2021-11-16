@@ -32,8 +32,8 @@ namespace RegexFileSearcher
             new(_pattern,
                 RegexOptions,
                 TimeoutInSeconds is not null
-                ? TimeSpan.FromSeconds(TimeoutInSeconds.Value)
-                : Regex.InfiniteMatchTimeout);
+                    ? TimeSpan.FromSeconds(TimeoutInSeconds.Value)
+                    : Regex.InfiniteMatchTimeout);
 
         private RegexOptions RegexOptions
         {
